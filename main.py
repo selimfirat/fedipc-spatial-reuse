@@ -16,8 +16,10 @@ nodes_data, y_true_dict = data_loader.get_data()
 
 # Preprocess data
 preprocessor = Preprocessor(cfg["preprocessor"])
+nodes_features, nodes_labels = preprocessor.apply(nodes_data)
 
 # Run model
+y_pred_dict = y_true_dict
 
 
 # Evaluate results

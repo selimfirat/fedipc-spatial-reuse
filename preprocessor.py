@@ -6,21 +6,31 @@ class Preprocessor:
     def __init__(self, preprocess_type="basic_features"):
         self.preprocess_type = preprocess_type
 
-    def apply(self, nodes):
+    def apply(self, nodes_data, nodes_labels):
         func = getattr(self, self.preprocess_type)
 
-        features = {sim_no: {} for sim_no in nodes.keys()}
-        for sim_no, node in nodes.items():
-            features[sim_no] = func(node)
+        features = {sim_no: {} for sim_no in nodes_data.keys()}
+        labels = {}
+
+        for sim_no, node in nodes_data.items():
+            features[sim_no], labels[sim_no] = func(node, nodes_labels[sim_no])
 
         return features
 
-    def basic_features(self, node_data):
+    def basic_features(self, node_data, node_labels):
 
-        r = ["interference", "rssi", "sinr"]
+        feature_names = ["threshold", "interference", "rssi", "sinr"]
 
-        res = np.empty((len(r),))
-        for i in range(len(r)):
-            res[i] = np.mean(node_data[r[i]])
+        num_data = len(node_data.keys())
+        num_features = len(feature_names)
 
-        return res
+        features = np.empty((num_data, num_features))
+        labels = np.empty((num_data, ))
+        for idx, (threshold, threshold_data) in enumerate(node_data.items()):
+
+            for fi in range(len(feature_names)):
+                features[idx, fi] = np.mean(node_data[feature_names[fi]])
+
+            labels[idx] = node_labels[threshold]
+
+        return features, labels
