@@ -2,7 +2,7 @@
 
 class Preprocessor:
 
-    def __init__(self, preprocess_type="all_features"):
+    def __init__(self, preprocess_type="basic_features"):
         self.preprocess_type = preprocess_type
 
     def apply(self, data):

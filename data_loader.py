@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import re
 
+
 class DataLoader:
 
     def __init__(self, inputs_path = "data/simulator_input_files", sim_outputs_path="data/output_11ax_sr_simulations.txt", use_cache=True, cache_path="tmp/nodes.pkl"):
@@ -11,11 +12,11 @@ class DataLoader:
         self.data_path = inputs_path
         self.cache_path = cache_path
 
-        self.nodes = self._load_nodes_cached() if self.use_cache else self._load_nodes()
+        self.nodes, self.y_true_dict = self._load_nodes_cached() if self.use_cache else self._load_nodes()
 
     def get_data(self):
 
-        return self.nodes
+        return (self.nodes, self.y_true_dict)
 
     def _load_nodes_cached(self):
         # Check for cache
@@ -24,13 +25,13 @@ class DataLoader:
                 return pickle.load(f)
 
         # Load input files
-        nodes = self._load_nodes()
+        nodes, y_true_dict = self._load_nodes()
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
-            pickle.dump(nodes, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((nodes, y_true_dict), f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        return nodes
+        return nodes, y_true_dict
 
     def _load_nodes(self):
         inputs = self._load_inputs()
@@ -61,8 +62,20 @@ class DataLoader:
 
                 nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
 
-        return nodes
+        y_true_dict = self._calculate_y_true_dict(nodes)
 
+        return nodes, y_true_dict
+
+    def _calculate_y_true_dict(self, nodes):
+
+        y_true_dict = {sim: {} for sim in nodes.keys()}
+
+        for sim in nodes.keys():
+            for threshold in nodes[sim].keys():
+                y_true_dict[sim][threshold] = nodes[sim][threshold]["throughput"][0]
+        
+        return y_true_dict
+    
     def _load_inputs(self):
         inputs = {}
         for fname in os.listdir(self.data_path):
@@ -80,4 +93,4 @@ if __name__ == "__main__":
     # Test data loading
     r = DataLoader()
 
-    print(r.get_data())
+    nodes, y_true_dict = r.get_data()
