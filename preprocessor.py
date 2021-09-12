@@ -1,12 +1,16 @@
 import numpy as np
-
+import os
+import pickle
 
 class Preprocessor:
 
-    def __init__(self, preprocess_type="basic_features"):
+    def __init__(self, preprocess_type="basic_features", use_cache=True, cache_path="tmp/"):
+        self.use_cache = use_cache
         self.preprocess_type = preprocess_type
 
-    def apply(self, nodes_data, y_true_dict):
+        self.cache_path = os.path.join(cache_path, f"features_{preprocess_type}.pkl")
+
+    def apply_noncached(self, nodes_data, y_true_dict):
         func = getattr(self, self.preprocess_type)
 
         features = {sim_no: {} for sim_no in nodes_data.keys()}
@@ -14,6 +18,24 @@ class Preprocessor:
 
         for sim_no, node in nodes_data.items():
             features[sim_no], labels[sim_no] = func(node, y_true_dict[sim_no])
+
+        return features, labels
+
+    def apply(self, nodes_data, y_true_dict):
+        if not self.use_cache:
+            return self.apply_noncached(nodes_data, y_true_dict)
+
+        # Check for cache
+        if os.path.exists(self.cache_path):
+            with open(self.cache_path, 'rb') as f:
+                return pickle.load(f)
+
+        # Load input files
+        features, labels = self.apply_noncached(nodes_data, y_true_dict)
+
+        # Cache contexts
+        with open(self.cache_path, 'wb') as f:
+            pickle.dump((features, labels), f, protocol=pickle.HIGHEST_PROTOCOL)
 
         return features, labels
 
