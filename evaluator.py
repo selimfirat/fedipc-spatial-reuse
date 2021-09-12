@@ -1,9 +1,9 @@
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 class Evaluator:
 
-    def __init__(self, metrics=["mse"]):
+    def __init__(self, metrics=["mse", "r2"]):
         self.metrics = metrics
 
     def calculate(self, y_true_dict, y_pred_dict):
@@ -27,3 +27,7 @@ class Evaluator:
     def mse(self, y_true, y_pred):
 
         return mean_squared_error(y_true, y_pred)
+
+    def r2(self, y_true, y_pred):
+
+        return r2_score(y_true, y_pred)

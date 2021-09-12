@@ -3,7 +3,6 @@ from data_loader import DataLoader
 from evaluator import Evaluator
 from preprocessor import Preprocessor
 
-
 # Get arguments
 cfg_loader = ConfigLoader()
 cfg = cfg_loader.load_by_cli()
@@ -16,7 +15,7 @@ nodes_data, y_true_dict = data_loader.get_data()
 
 # Preprocess data
 preprocessor = Preprocessor(cfg["preprocessor"])
-nodes_features, nodes_labels = preprocessor.apply(nodes_data)
+nodes_features, nodes_labels = preprocessor.apply(nodes_data, y_true_dict)
 
 # Run model
 y_pred_dict = y_true_dict
