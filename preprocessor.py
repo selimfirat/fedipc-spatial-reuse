@@ -3,6 +3,7 @@ import os
 import pickle
 from sklearn.utils import shuffle
 
+
 class Preprocessor:
 
     def __init__(self, preprocess_type="basic_features", use_cache=True, cache_path="tmp/", shuffle_per_node=True):
@@ -11,20 +12,28 @@ class Preprocessor:
         self.use_cache = use_cache
         self.cache_path = os.path.join(cache_path, f"features_{preprocess_type}.pkl")
 
-    def apply_noncached(self, nodes_data, y_true_dict):
+    def apply_noncached(self, nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts):
         func = getattr(self, self.preprocess_type)
 
         features = {sim_no: {} for sim_no in nodes_data.keys()}
         labels = {}
 
         for sim_no, node in nodes_data.items():
-            features[sim_no], labels[sim_no] = func(node, y_true_dict[sim_no])
+            if sim_no in train_contexts:
+                node_type = "train"
+            elif sim_no in val_contexts:
+                node_type = "val"
+            else:
+                node_type = "test"
+            features[sim_no], labels[sim_no] = func(node, y_true_dict[sim_no], node_type)
+            if self.shuffle_per_node:
+                features[sim_no], labels[sim_no] = shuffle(features[sim_no], labels[sim_no], random_state=1)
 
         return features, labels
 
-    def apply(self, nodes_data, y_true_dict):
+    def apply(self, nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts):
         if not self.use_cache:
-            return self.apply_noncached(nodes_data, y_true_dict)
+            return self.apply_noncached(nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts)
 
         # Check for cache
         if os.path.exists(self.cache_path):
@@ -32,10 +41,7 @@ class Preprocessor:
                 return pickle.load(f)
 
         # Load input files
-        features, labels = self.apply_noncached(nodes_data, y_true_dict)
-
-        if self.shuffle_per_node:
-            features, labels = shuffle(features, labels, random_state=1)
+        features, labels = self.apply_noncached(nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts)
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
@@ -43,7 +49,7 @@ class Preprocessor:
 
         return features, labels
 
-    def basic_features(self, node_data, node_labels):
+    def basic_features(self, node_data, node_labels, node_type):
 
         feature_names = ["threshold", "interference", "rssi", "sinr"]
 

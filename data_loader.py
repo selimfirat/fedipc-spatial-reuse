@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import pickle
 import re
-
+from sklearn.model_selection import train_test_split
 
 class DataLoader:
 
@@ -12,11 +12,11 @@ class DataLoader:
         self.data_path = inputs_path
         self.cache_path = cache_path
 
-        self.nodes, self.y_true_dict = self._load_nodes_cached() if self.use_cache else self._load_nodes()
+        self.nodes, self.y_true_dict, self.train_contexts, self.val_contexts, self.test_contexts = self._load_nodes_cached() if self.use_cache else self._load_nodes()
 
     def get_data(self):
 
-        return (self.nodes, self.y_true_dict)
+        return self.nodes, self.y_true_dict, self.train_contexts, self.val_contexts, self.test_contexts
 
     def _load_nodes_cached(self):
         # Check for cache
@@ -25,13 +25,13 @@ class DataLoader:
                 return pickle.load(f)
 
         # Load input files
-        nodes, y_true_dict = self._load_nodes()
+        nodes, y_true_dict, train_contexts, val_contexts, test_contexts = self._load_nodes()
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
-            pickle.dump((nodes, y_true_dict), f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((nodes, y_true_dict, train_contexts, val_contexts, test_contexts), f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        return nodes, y_true_dict
+        return nodes, y_true_dict, train_contexts, val_contexts, test_contexts
 
     def _load_nodes(self):
         inputs = self._load_inputs()
@@ -64,7 +64,10 @@ class DataLoader:
 
         y_true_dict = self._calculate_y_true_dict(nodes)
 
-        return nodes, y_true_dict
+        train_contexts, test_contexts = train_test_split(list(y_true_dict.keys()), test_size=300, random_state=1, shuffle=True)
+        val_contexts, test_contexts = train_test_split(test_contexts, test_size=200, random_state=1, shuffle=False)
+
+        return nodes, y_true_dict, train_contexts, val_contexts, test_contexts
 
     def _calculate_y_true_dict(self, nodes):
 

@@ -2,3 +2,4 @@ pandas
 argparse
 sklearn
 numpy
+torch
