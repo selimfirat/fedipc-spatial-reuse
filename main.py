@@ -20,7 +20,6 @@ nodes_features, nodes_labels = preprocessor.apply(nodes_data, y_true_dict)
 # Run model
 y_pred_dict = y_true_dict
 
-
 # Evaluate results
 evaluator = Evaluator(cfg["metrics"])
 

@@ -1,13 +1,14 @@
 import numpy as np
 import os
 import pickle
+from sklearn.utils import shuffle
 
 class Preprocessor:
 
-    def __init__(self, preprocess_type="basic_features", use_cache=True, cache_path="tmp/"):
-        self.use_cache = use_cache
+    def __init__(self, preprocess_type="basic_features", use_cache=True, cache_path="tmp/", shuffle_per_node=True):
         self.preprocess_type = preprocess_type
-
+        self.shuffle_per_node = shuffle_per_node
+        self.use_cache = use_cache
         self.cache_path = os.path.join(cache_path, f"features_{preprocess_type}.pkl")
 
     def apply_noncached(self, nodes_data, y_true_dict):
@@ -32,6 +33,9 @@ class Preprocessor:
 
         # Load input files
         features, labels = self.apply_noncached(nodes_data, y_true_dict)
+
+        if self.shuffle_per_node:
+            features, labels = shuffle(features, labels, random_state=1)
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
