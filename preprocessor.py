@@ -17,19 +17,17 @@ class Preprocessor:
 
         features = {sim_no: {} for sim_no in nodes_data.keys()}
         labels = {}
+        thresholds = {}
 
         for sim_no, node in nodes_data.items():
-            if sim_no in train_contexts:
-                node_type = "train"
-            elif sim_no in val_contexts:
-                node_type = "val"
-            else:
-                node_type = "test"
-            features[sim_no], labels[sim_no] = func(node, y_true_dict[sim_no], node_type)
-            if self.shuffle_per_node:
-                features[sim_no], labels[sim_no] = shuffle(features[sim_no], labels[sim_no], random_state=1)
+            node_type = "train" if sim_no in train_contexts else ("val" if sim_no in val_contexts else "test")
 
-        return features, labels
+            features[sim_no], labels[sim_no], thresholds[sim_no] = func(node, y_true_dict[sim_no], node_type)
+
+            if self.shuffle_per_node:
+                features[sim_no], labels[sim_no], thresholds[sim_no] = shuffle(features[sim_no], labels[sim_no], thresholds[sim_no], random_state=1)
+
+        return features, labels, thresholds
 
     def apply(self, nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts):
         if not self.use_cache:
@@ -41,13 +39,13 @@ class Preprocessor:
                 return pickle.load(f)
 
         # Load input files
-        features, labels = self.apply_noncached(nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts)
+        features, labels, thresholds = self.apply_noncached(nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts)
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
-            pickle.dump((features, labels), f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump((features, labels, thresholds), f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        return features, labels
+        return features, labels, thresholds
 
     def basic_features(self, node_data, node_labels, node_type):
 
@@ -58,6 +56,7 @@ class Preprocessor:
 
         features = np.empty((num_data, num_features))
         labels = np.empty((num_data, ))
+        thresholds = list(node_data.keys())
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
@@ -68,4 +67,4 @@ class Preprocessor:
 
             labels[idx] = node_labels[threshold]
 
-        return features, labels
+        return features, labels, thresholds
