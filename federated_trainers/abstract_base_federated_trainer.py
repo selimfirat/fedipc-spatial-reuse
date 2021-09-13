@@ -16,5 +16,5 @@ class AbstractBaseFederatedTrainer(ABC):
         pass
 
     @abstractmethod
-    def predict_with_main_model(self, nodes_features, target_nodes):
+    def predict(self, nodes_features, target_nodes):
         pass

@@ -4,16 +4,17 @@ import torch
 from torch.optim import SGD
 from tqdm import tqdm
 from federated_trainers.abstract_base_federated_trainer import AbstractBaseFederatedTrainer
-
+from copy import deepcopy
 
 class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
-    def __init__(self, main_model, nn_models, **params):
-        self.main_model = main_model
-        self.nn_models = nn_models
+    def __init__(self, model, **params):
+        self.model = model
         self.params = params
 
-        self.optimizers = {context_key: SGD(model.parameters(), lr=self.params["lr"]) for context_key, model in self.nn_models.items()}
+        self.optimizer = SGD(model.parameters(), lr=self.params["lr"])
+
+
 
     def train(self, nodes_features, nodes_labels, train_contexts):
 
@@ -22,19 +23,14 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
             chosen_nodes = np.random.choice(train_contexts, m, replace=False)
 
             # Run models in parallel.
-            # TODO: add cli param to disable parallel running to save memory etc.
-            processes = []
+            original_state_dict = deepcopy(self.model.state_dict())
+            state_dicts = {}
             for context_key in chosen_nodes:
-                p = mp.Process(target=self.train_node, args=(self.nn_models[context_key], self.optimizers[context_key], nodes_features[context_key], nodes_labels[context_key]))
-                p.start()
-                processes.append(p)
+                self.model.load_state_dict(original_state_dict)
+                self.train_node(self.model, self.optimizer, nodes_features[context_key], nodes_labels[context_key])
+                state_dicts[context_key] = deepcopy(self.model.state_dict())
 
-            for p in processes:
-                p.join()
-
-            self.aggregate(chosen_nodes)
-
-        return self.nn_models
+            self.aggregate(state_dicts)
 
     def train_node(self, model, optimizer, X, y):
         batch_size = self.params["batch_size"]
@@ -60,26 +56,23 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
             avg_loss = total_loss / (X.shape[0] // batch_size + (1 if X.shape[0] % batch_size == 0 else 0))
 
-        return self.main_model, self.nn_models
+    def aggregate(self, state_dicts):
 
-    def aggregate(self, chosen_nodes):
-        main_sd = self.main_model.state_dict()
-        state_dicts = [self.nn_models[context_key].state_dict() for context_key in chosen_nodes]
+        new_state_dict = {}
 
-        for key in main_sd:
+        cur_state_dict = self.model.state_dict()
+
+        for key in cur_state_dict.keys():
             # TODO: implement n_k / n part (not required for now since all n_k / n values are equal)
-            main_sd[key] = torch.mean(torch.stack([sd[key] for sd in state_dicts]), dim=0)
+            new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in state_dicts.values()]), dim=0)
 
-        self.main_model.load_state_dict(main_sd)
+        self.model.load_state_dict(new_state_dict)
 
-        for model in self.nn_models.values():
-            model.load_state_dict(main_sd)
+    def predict(self, nodes_features, target_nodes):
 
-    def predict_with_main_model(self, nodes_features, target_nodes):
-
-        self.main_model.eval()
+        self.model.eval()
         res = torch.empty((len(target_nodes),))
         for idx, context_key in enumerate(target_nodes):
-            res[idx] = self.main_model.forward(nodes_features[context_key])
+            res[idx] = self.model.forward(nodes_features[context_key])
 
         return res

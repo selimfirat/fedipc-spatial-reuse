@@ -8,12 +8,8 @@ class ModelBuilder:
         self.params = params
         self.nn_model_cls = modelname_2_modelcls[self.nn_model]
 
-    def instantiate_models(self, num_instances):
-        models = []
-        for i in range(num_instances):
-            model = self.nn_model_cls(**self.params)
-            models.append(model)
+    def instantiate_model(self):
 
-        main_model = self.nn_model_cls(**self.params)
+        model = self.nn_model_cls(**self.params)
 
-        return main_model, models
+        return model

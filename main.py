@@ -26,16 +26,14 @@ def main():
 
     # Build models
     model_builder = ModelBuilder(nn_model=cfg["nn_model"], input_size=list(nodes_features.values())[0].shape[1], hidden_size=10)
-    main_model, nn_models = model_builder.instantiate_models(num_instances=len(train_contexts))
-
-    nn_models = dict(zip(train_contexts, nn_models)) # Assign a model per context
+    model = model_builder.instantiate_model()
 
     # Train models
-    trainer = FederatedAveragingTrainer(main_model=main_model, nn_models=nn_models, num_rounds=1, participation=1.0, num_epochs=1, lr=1e-3, batch_size=8)
+    trainer = FederatedAveragingTrainer(model, num_rounds=1, participation=1.0, num_epochs=1, lr=1e-3, batch_size=8)
 
-    main_model, nn_models = trainer.train(nodes_features, nodes_labels, train_contexts)
+    trainer.train(nodes_features, nodes_labels, train_contexts)
 
-    y_pred = trainer.predict_with_main_model(nodes_features, val_contexts)
+    y_pred = trainer.predict(nodes_features, val_contexts)
     y_pred_dict = Evaluator.build_pred_dict(y_pred, val_contexts, nodes_thresholds)
 
     # Evaluate results
