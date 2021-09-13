@@ -1,1 +1,1 @@
-rm ../tmp/*.pkl
+rm tmp/*.pkl

@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import torch
 import pickle
 from sklearn.utils import shuffle
 
@@ -54,8 +55,8 @@ class Preprocessor:
         num_data = len(node_data.keys())
         num_features = len(feature_names)
 
-        features = np.empty((num_data, num_features))
-        labels = np.empty((num_data, ))
+        features = torch.empty((num_data, num_features))
+        labels = torch.empty((num_data, ))
         thresholds = list(node_data.keys())
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
@@ -63,7 +64,7 @@ class Preprocessor:
             threshold_data["threshold"] = int(threshold_data["threshold"])
 
             for fi in range(len(feature_names)):
-                features[idx, fi] = np.mean(threshold_data[feature_names[fi]])
+                features[idx, fi] = torch.from_numpy(np.array(np.mean(threshold_data[feature_names[fi]])))
 
             labels[idx] = node_labels[threshold]
 

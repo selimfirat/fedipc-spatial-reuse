@@ -14,4 +14,6 @@ class ModelBuilder:
             model = self.nn_model_cls(**self.params)
             models.append(model)
 
-        return models
+        main_model = self.nn_model_cls(**self.params)
+
+        return main_model, models

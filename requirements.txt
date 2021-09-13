@@ -3,3 +3,4 @@ argparse
 sklearn
 numpy
 torch
+pytorch-lightning
