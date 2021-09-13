@@ -31,11 +31,12 @@ def main():
     nn_models = dict(zip(train_contexts, nn_models)) # Assign a model per context
 
     # Train models
-    trainer = FederatedAveragingTrainer(main_model=main_model, nn_models=nn_models, num_rounds=3, participation=1.0, num_epochs=5, lr=1e-3, batch_size=8)
+    trainer = FederatedAveragingTrainer(main_model=main_model, nn_models=nn_models, num_rounds=1, participation=1.0, num_epochs=1, lr=1e-3, batch_size=8)
 
-    nn_models = trainer.train(nodes_features, nodes_labels, train_contexts, val_contexts)
+    main_model, nn_models = trainer.train(nodes_features, nodes_labels, train_contexts)
 
-    y_pred_dict = y_true_dict
+    y_pred = trainer.predict_with_main_model(nodes_features, val_contexts)
+    y_pred_dict = Evaluator.build_pred_dict(y_pred, val_contexts, nodes_thresholds)
 
     # Evaluate results
     evaluator = Evaluator(cfg["metrics"])
@@ -43,6 +44,7 @@ def main():
     res = evaluator.calculate(y_true_dict, y_pred_dict)
 
     print(res)
+
 
 if __name__ == "__main__":
     main()

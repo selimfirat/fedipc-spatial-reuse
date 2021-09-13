@@ -1,8 +1,8 @@
 from sklearn.metrics import mean_squared_error, r2_score
 
 
-# TODO: Implement a metric for fairness since the aim is "increasing performance while reducing the number of
-# undesired situations (e.g. poor fairness)."
+# TODO: Implement a metric for fairness since the aim is "increasing performance while reducing the number of undesired situations (e.g. poor fairness)."
+# TODO: Implement a metric for evaluating
 class Evaluator:
 
     def __init__(self, metrics=["mse", "r2"]):
@@ -33,3 +33,12 @@ class Evaluator:
     def r2(self, y_true, y_pred):
 
         return r2_score(y_true, y_pred)
+
+    @staticmethod
+    def build_pred_dict(y_pred, contexts, thresholds):
+        y_pred_dict = {
+            context_key: { threshold: y_pred[context_key][idx] for idx, threshold in enumerate(thresholds[context_key])
+                           } for context_key in contexts
+        }
+
+        return y_pred_dict
