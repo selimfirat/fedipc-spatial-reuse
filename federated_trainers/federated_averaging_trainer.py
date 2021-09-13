@@ -72,8 +72,8 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
         self.main_model.load_state_dict(main_sd)
 
-        for sd in state_dicts:
-            sd.load_state_dict(main_sd)
+        for model in self.nn_models:
+            model.load_state_dict(main_sd)
 
     def predict_with_main_model(self, nodes_features, target_nodes):
 
