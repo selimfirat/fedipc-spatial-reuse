@@ -4,6 +4,7 @@ import pickle
 import re
 from sklearn.model_selection import train_test_split
 
+
 class DataLoader:
 
     def __init__(self, inputs_path = "data/simulator_input_files", sim_outputs_path="data/output_11ax_sr_simulations.txt", use_cache=True, cache_path="tmp/nodes.pkl"):
@@ -47,6 +48,7 @@ class DataLoader:
                 break
 
             if cur_step[0] == "initial":
+                cur_simulation = {}
                 cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
                 cur_simulation["threshold"] = "-" + cur_simulation["threshold"]
             else:
@@ -96,4 +98,7 @@ if __name__ == "__main__":
     # Test data loading
     r = DataLoader()
 
-    nodes, y_true_dict = r.get_data()
+    nodes, y_true_dict, train_contexts, val_contexts, test_contexts = r.get_data()
+
+    print(nodes["0000"]["-68"]["throughput"])
+    assert nodes["0000"]["-68"]["throughput"][0] == [17.0]
