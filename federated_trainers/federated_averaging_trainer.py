@@ -69,10 +69,18 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
         self.model.load_state_dict(new_state_dict)
 
     def predict(self, nodes_features, target_nodes):
+        batch_size = self.params["batch_size"]
+        num_datapoints = list(nodes_features.values())[0].shape[0] # =21
 
         self.model.eval()
-        res = torch.empty((len(target_nodes),))
+        res = {}
         for idx, context_key in enumerate(target_nodes):
-            res[idx] = self.model.forward(nodes_features[context_key])
+            X = nodes_features[context_key]
+            res[context_key] = torch.empty((num_datapoints))
+            for i in range(0, X.shape[0], batch_size):
+                X_batch = X[i:i+batch_size]
+
+                y_batch_pred = self.model.forward(X_batch)
+                res[context_key][i:i + batch_size] = y_batch_pred[:, 0]
 
         return res
