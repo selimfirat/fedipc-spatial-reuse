@@ -3,9 +3,10 @@ import torch.multiprocessing as mp
 import torch
 from torch.optim import SGD
 from tqdm import tqdm
+from federated_trainers.abstract_base_federated_trainer import AbstractBaseFederatedTrainer
 
 
-class FederatedAveragingTrainer:
+class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
     def __init__(self, main_model, nn_models, **params):
         self.main_model = main_model

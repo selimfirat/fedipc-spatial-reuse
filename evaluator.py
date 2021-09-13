@@ -2,7 +2,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 
 # TODO: Implement a metric for fairness since the aim is "increasing performance while reducing the number of undesired situations (e.g. poor fairness)."
-# TODO: Implement a metric for evaluating
+# TODO: Implement a metric for evaluating ranking of the throughputs.
 class Evaluator:
 
     def __init__(self, metrics=["mse", "r2"]):
