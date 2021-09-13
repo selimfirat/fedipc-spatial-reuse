@@ -33,3 +33,6 @@ FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 1. Create a trainer class extending `federated_trainers.abstract_base_federated_trainer.AbstractBaseFederatedTrainer` in `./federated_trainers` directory.
 2. Import the new federated learning trainer class and add an entry of <`$trainer_name`, `$trainer_class`> to the `modelname_2_modelcls` dictionary in `./federated_trainers/__init__.py` file.
 3. Use the FL architecture with `--fed_model $trainer_name` cli argument.
+
+### Adding New CLI Argument
+1. Add the argparse argument via `parser.add_argument` in `./config_loader.py` file. Tutorial: [this link](https://www.pythonforbeginners.com/argparse/argparse-tutorial).
