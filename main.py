@@ -30,10 +30,11 @@ def main():
     model = model_builder.instantiate_model()
 
     # Train models
-    trainer = FederatedAveragingTrainer(model, num_rounds=2, participation=1.0, num_epochs=1, lr=1e-3, batch_size=16)
+    trainer = FederatedAveragingTrainer(model, num_rounds=1, participation=1.0, num_epochs=5, lr=1e-3, batch_size=16)
 
     trainer.train(nodes_features, nodes_labels, train_contexts)
 
+    # Train metrics
     y_pred = trainer.predict(nodes_features, train_contexts)
     y_pred_dict = Evaluator.build_pred_dict(y_pred, train_contexts, nodes_thresholds)
 
@@ -42,7 +43,18 @@ def main():
 
     res = evaluator.calculate(y_true_dict, y_pred_dict)
 
-    print(res)
+    print("Training", res)
+
+    # Validation metrics
+    y_pred = trainer.predict(nodes_features, val_contexts)
+    y_pred_dict = Evaluator.build_pred_dict(y_pred, val_contexts, nodes_thresholds)
+
+    # Evaluate results
+    evaluator = Evaluator(cfg["metrics"])
+
+    res = evaluator.calculate(y_true_dict, y_pred_dict)
+
+    print("Validation", res)
 
 
 if __name__ == "__main__":

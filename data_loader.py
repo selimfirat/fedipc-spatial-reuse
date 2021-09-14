@@ -101,4 +101,4 @@ if __name__ == "__main__":
     nodes, y_true_dict, train_contexts, val_contexts, test_contexts = r.get_data()
 
     print(nodes["0000"]["-68"]["throughput"])
-    assert nodes["0000"]["-68"]["throughput"][0] == [17.0]
+    assert nodes["0000"]["-68"]["throughput"] == [17.0]

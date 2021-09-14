@@ -27,7 +27,6 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                 self.model.load_state_dict(original_state_dict)
                 optimizer = SGD(self.model.parameters(), lr=self.params["lr"])
 
-                print(nodes_features[context_key], nodes_labels[context_key])
                 self.train_node(self.model, optimizer, nodes_features[context_key], nodes_labels[context_key])
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
@@ -46,33 +45,31 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
             # The data are shuffled in preprocessor so no need to shuffle again.
             for i in range(0, X.shape[0], batch_size):
-                optimizer.zero_grad()
+                model.zero_grad()
 
                 X_batch, y_batch = X[i:i+batch_size, :], y[i:i+batch_size]
 
                 y_batch_pred = model.forward(X_batch)[:, 0]
 
-                cur_loss = ((y_batch - y_batch_pred)**2).sum()
-                # print(y_batch, y_batch_pred)
+                cur_loss = ((y_batch - y_batch_pred)).mean()
 
                 cur_loss.backward()
 
                 optimizer.step()
 
-                epoch_total_loss += cur_loss.item()
+                epoch_total_loss += cur_loss.item() * X_batch.shape[0]
 
             epoch_avg_loss = epoch_total_loss / X.shape[0]
             total_loss += epoch_avg_loss
             avg_loss = total_loss / (epoch_idx + 1)
 
+            #print(epoch_idx + 1, avg_loss)
 
     def aggregate(self, state_dicts):
 
         new_state_dict = {}
 
-        cur_state_dict = self.model.state_dict()
-
-        for key in cur_state_dict.keys():
+        for key in self.model.state_dict().keys():
             # TODO: implement n_k / n part (not required for now since all n_k / n values are equal)
             new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in state_dicts.values()]), dim=0)
 
@@ -87,11 +84,11 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
         res = {}
         for idx, context_key in enumerate(target_nodes):
             X = nodes_features[context_key]
-            res[context_key] = torch.empty((num_datapoints))
+            res[context_key] = torch.empty((num_datapoints,))
             for i in range(0, X.shape[0], batch_size):
                 X_batch = X[i:i+batch_size]
 
-                y_batch_pred = self.model.forward(X_batch)
+                y_batch_pred = self.model.forward(X_batch).detach()
                 res[context_key][i:i + batch_size] = y_batch_pred[:, 0]
 
         return res

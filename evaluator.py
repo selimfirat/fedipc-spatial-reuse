@@ -16,7 +16,7 @@ class Evaluator:
         for sim in y_pred_dict.keys():
             for threshold in y_pred_dict[sim]:
                 y_true.append(y_true_dict[sim][threshold])
-                y_pred.append(y_pred_dict[sim][threshold])
+                y_pred.append(y_pred_dict[sim][threshold].item())
 
         results = {}
 
