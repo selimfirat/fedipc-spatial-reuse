@@ -12,8 +12,6 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
         self.model = model
         self.params = params
 
-
-
     def train(self, nodes_features, nodes_labels, train_contexts):
 
         for _ in tqdm(range(self.params["num_rounds"])):

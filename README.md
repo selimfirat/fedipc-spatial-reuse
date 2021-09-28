@@ -3,15 +3,17 @@ FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 
 
 ## Setup
-* Download `output_11ax_sr_simulations.txt` from [this link](https://zenodo.org/record/5352060#.YT-3aZ4zbOR) and place this file into the `./data/` folder.
-* Download `simulator_input_files.zip` from [this link](https://zenodo.org/record/5352060#.YT-3aZ4zbOR) and place `simulator_input_files` directory into the `./data/` folder.
 * `pip install requirements.txt`
+* Running using the command below automatically donwloads the data
 
 ## Running
 * `python main.py`
-* or you may use arguments via `python main.py --preprocessor all_features` 
+* or you may use arguments via `python main.py --scenario 1 --preprocessor all_features` 
 
 ## Command Line  Interface Arguments
+* Run `python main.py --help` for details.
+* `--scenario` (default: `1`)
+    * `1` or `1`
 * `--preprocessor` (default: `basic_features`)
     * `basic_features`
 * `--nn_model` (default: `mlp`)

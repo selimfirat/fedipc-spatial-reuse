@@ -15,14 +15,12 @@ def main():
     cfg = cfg_loader.load_by_cli()
 
     # Load Data
-    data_loader = DataLoader()
-    nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts = data_loader.get_data()
-    num_contexts = len(nodes_data.keys())
-    num_outputs = 1 # Number of throughputs to be predicted. # TODO: check whether number of outputs/throughputs is greater than 1.
+    data_loader = DataLoader(cfg["scenario"])
+    nodes_data, y_true_dict, train_contexts, test_contexts = data_loader.get_data()
 
     # Preprocess data
-    preprocessor = Preprocessor(cfg["preprocessor"])
-    nodes_features, nodes_labels, nodes_thresholds = preprocessor.apply(nodes_data, y_true_dict, train_contexts, val_contexts, test_contexts)
+    preprocessor = Preprocessor(cfg["preprocessor"], cfg["scenario"])
+    nodes_features, nodes_labels, nodes_thresholds = preprocessor.apply(nodes_data, y_true_dict, train_contexts, test_contexts)
 
     # Build models
     input_size = list(nodes_features.values())[0].shape[1]
@@ -46,8 +44,8 @@ def main():
     print("Training", res)
 
     # Validation metrics
-    y_pred = trainer.predict(nodes_features, val_contexts)
-    y_pred_dict = Evaluator.build_pred_dict(y_pred, val_contexts, nodes_thresholds)
+    y_pred = trainer.predict(nodes_features, test_contexts)
+    y_pred_dict = Evaluator.build_pred_dict(y_pred, test_contexts, nodes_thresholds)
 
     # Evaluate results
     evaluator = Evaluator(cfg["metrics"])
