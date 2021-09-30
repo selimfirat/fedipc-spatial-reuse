@@ -24,11 +24,12 @@ def main():
 
     # Build models
     input_size = list(nodes_features.values())[0].shape[1]
-    model_builder = ModelBuilder(nn_model=cfg["nn_model"], input_size=input_size, hidden_size=10)
+    output_size = 1 if cfg["scenario"] == 1 else 4
+    model_builder = ModelBuilder(nn_model=cfg["nn_model"], input_size=input_size, hidden_size=10, output_size=output_size)
     model = model_builder.instantiate_model()
 
     # Train models
-    trainer = FederatedAveragingTrainer(model, num_rounds=1, participation=1.0, num_epochs=5, lr=1e-3, batch_size=16)
+    trainer = FederatedAveragingTrainer(model, num_rounds=15, participation=1.0, num_epochs=15, lr=1e-3, batch_size=16)
 
     trainer.train(nodes_features, nodes_labels, train_contexts)
 

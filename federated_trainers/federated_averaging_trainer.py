@@ -49,7 +49,7 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
                 y_batch_pred = model.forward(X_batch)[:, 0]
 
-                cur_loss = ((y_batch - y_batch_pred)).mean()
+                cur_loss = ((y_batch - y_batch_pred)**2).mean()
 
                 cur_loss.backward()
 
@@ -61,7 +61,6 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
             total_loss += epoch_avg_loss
             avg_loss = total_loss / (epoch_idx + 1)
 
-            #print(epoch_idx + 1, avg_loss)
 
     def aggregate(self, state_dicts):
 

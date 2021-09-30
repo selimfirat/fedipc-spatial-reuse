@@ -67,7 +67,7 @@ class DataLoader:
     def _load_nodes(self):
         inputs = self._load_inputs()
 
-        f = open(self.outputs_path, "r")
+        f = open(self.outputs_path, "r", encoding="ISO-8859-1")
 
         nodes = {}
 
@@ -82,9 +82,9 @@ class DataLoader:
                 cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
                 cur_simulation["threshold"] = "-" + cur_simulation["threshold"]
             else:
-                line = line.strip("\\n")
-                line = line.replace("f48.29", "48.29") # Fixes the bug in scenario 1.
-                cur_simulation[cur_step[0]] = list(map(float, line.split(",")))
+                nums = re.findall('(\d+\.\d+|nan|-nan)', line)
+                nums = [num.replace("nan", "0") for num in nums] # TODO: Fix nan issue
+                cur_simulation[cur_step[0]] = list(map(float, nums))
 
             cur_step = cur_step[1:] + cur_step[:1] # turn step
 
