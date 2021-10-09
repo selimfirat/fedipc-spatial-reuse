@@ -36,7 +36,7 @@ class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
             threshold_data["threshold"] = int(threshold_data["threshold"][0])
 
             for fi in range(len(feature_names)):
-                features[idx, fi] = torch.from_numpy(np.array(np.mean(np.array(threshold_data[feature_names[fi]], dtype=np.float32))))
+                features[idx, fi] = torch.mean(torch.FloatTensor(threshold_data[feature_names[fi]]))
 
             labels[idx] = node_labels[threshold]
 

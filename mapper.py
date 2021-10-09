@@ -1,3 +1,6 @@
+from preprocessors.padded_features_preprocessor import PaddedFeaturesPreprocessor
+
+
 class Mapper:
 
     @staticmethod
@@ -35,6 +38,7 @@ class Mapper:
 
         return {
             "mean_features": MeanFeaturesPreprocessor,
+            "padded_features": PaddedFeaturesPreprocessor,
             "sequential_features": SequentialFeaturesPreprocessor
         }[preprocessor]
 
