@@ -2,10 +2,9 @@ from torch import nn
 
 class MLP(nn.Module):
 
-    def __init__(self, output_size, mlp_hidden_sizes, mlp_activation, **params):
+    def __init__(self, output_size, mlp_hidden_sizes, mlp_activation, input_size, **params):
         super(MLP, self).__init__()
-        self.input_size = 4
-        self.linear_sizes = [self.input_size] + mlp_hidden_sizes + [output_size]
+        self.linear_sizes = [input_size] + mlp_hidden_sizes + [output_size]
 
         self.fcs = nn.ModuleList([nn.Linear(self.linear_sizes[i], self.linear_sizes[i+1]) for i in range(len(self.linear_sizes) - 1) ])
 

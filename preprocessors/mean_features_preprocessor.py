@@ -2,7 +2,7 @@ import torch
 from preprocessors.abstract_base_preprocessor import AbstractBasePreprocessor
 import numpy as np
 
-class BasicFeaturesPreprocessor(AbstractBasePreprocessor):
+class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
 
     def fit(self, train_loader):
 
@@ -39,7 +39,5 @@ class BasicFeaturesPreprocessor(AbstractBasePreprocessor):
                 features[idx, fi] = torch.from_numpy(np.array(np.mean(np.array(threshold_data[feature_names[fi]], dtype=np.float32))))
 
             labels[idx] = node_labels[threshold]
-
-
 
         return features, labels

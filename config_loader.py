@@ -9,7 +9,7 @@ class ConfigLoader:
         parser.add_argument("--scenario", default=1, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
         parser.add_argument("--federated_trainer", default="fed_avg", type=str, help="Federated Architecture")
         parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
-        parser.add_argument("--preprocessor", default="basic_features", type=str,
+        parser.add_argument("--preprocessor", default="mean_features", type=str,
                             help="Preprocessor function applied to the raw data")
         parser.add_argument("--metrics", type=str, nargs='+', default=["mse", "r2"], help="List of metrics to be calculated")
 

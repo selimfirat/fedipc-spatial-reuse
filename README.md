@@ -14,8 +14,8 @@ FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 * Run `python main.py --help` for details.
 * `--scenario` (default: `1`)
     * `1` or `2`
-* `--preprocessor` (default: `basic_features`)
-    * `basic_features`
+* `--preprocessor` (default: `mean_features`)
+    * `mean_features`
 * `--nn_model` (default: `mlp`)
     * `mlp`
 * `--fed_model` (default: `fed_avg`)

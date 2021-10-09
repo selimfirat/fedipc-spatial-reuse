@@ -17,7 +17,7 @@ def main():
 
     # Preprocess data
     preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(**cfg)
-    train_loader, test_loader = preprocessor.fit_transform(train_loader, test_loader)
+    train_loader, test_loader, cfg["input_size"] = preprocessor.fit_transform(train_loader, test_loader)
 
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
 
