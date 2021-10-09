@@ -4,8 +4,7 @@ from config_loader import ConfigLoader
 from dataset import SRDataset, get_data_loaders
 from evaluator import Evaluator
 from federated_trainers.federated_averaging_trainer import FederatedAveragingTrainer
-from nn_models import get_nn_model
-from preprocessors import get_preprocessor
+from maps import Maps
 from utils import seed_everything
 
 def main():
@@ -20,15 +19,13 @@ def main():
     train_loader, test_loader = get_data_loaders(cfg["scenario"])
 
     # Preprocess data
-    preprocessor = get_preprocessor(cfg)
+    preprocessor = Maps.preprocessors[cfg['preprocessor']](**cfg)
     train_loader, test_loader = preprocessor.fit_transform(train_loader, test_loader)
 
-    # Get NN model
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
-    model = get_nn_model(cfg)
 
     # Train models
-    trainer = FederatedAveragingTrainer(model, **cfg)
+    trainer = FederatedAveragingTrainer(**cfg)
     trainer.train(train_loader)
 
     # Evaluate

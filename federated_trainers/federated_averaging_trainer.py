@@ -3,20 +3,23 @@ import torch
 from torch.optim import SGD
 from tqdm import tqdm
 from copy import deepcopy
+from federated_trainers.abstract_base_federated_trainer import AbstractBaseFederatedTrainer
 
-from federated_trainers import get_loss
 
+class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
-class FederatedAveragingTrainer:
+    def __init__(self, **cfg):
+        super().__init__(**cfg)
+        
+        self.model = self.get_nn_model()
+        self.loss = self.get_loss()
 
-    def __init__(self, model, **params):
-        self.model = model
-        self.params = params
+        self.cfg = cfg
 
     def train(self, train_loader):
 
-        for round_idx in tqdm(range(self.params["num_rounds"])):
-            m = max(int(np.round(self.params["participation"]*len(train_loader))), 1)
+        for round_idx in tqdm(range(self.cfg["num_rounds"])):
+            m = max(int(np.round(self.cfg["participation"]*len(train_loader))), 1)
             chosen_contexts = np.random.choice(list(range(len(train_loader))), m, replace=False)
 
             original_state_dict = deepcopy(self.model.state_dict())
@@ -27,7 +30,7 @@ class FederatedAveragingTrainer:
                     continue
 
                 self.model.load_state_dict(original_state_dict)
-                optimizer = SGD(self.model.parameters(), lr=self.params["lr"])
+                optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"])
 
                 self.train_node(self.model, optimizer, context_data_loader)
 
@@ -40,7 +43,7 @@ class FederatedAveragingTrainer:
 
         total_loss = .0
 
-        for epoch_idx in range(self.params["num_epochs"]):
+        for epoch_idx in range(self.cfg["num_epochs"]):
 
             epoch_total_loss = .0
 
@@ -49,9 +52,9 @@ class FederatedAveragingTrainer:
                 model.zero_grad()
                 optimizer.zero_grad()
 
-                y_pred = model.forward(X)
+                y_pred = model.forward(X)[:, 0]
 
-                cur_loss = get_loss(y_pred, y)
+                cur_loss = self.loss(y_pred, y)
 
                 cur_loss.backward()
 

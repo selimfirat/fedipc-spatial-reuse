@@ -1,16 +1,24 @@
-import torch
+from torch import nn
 
+class MLP(nn.Module):
 
-class MLP(torch.nn.Module):
-
-    def __init__(self, output_size, **params):
+    def __init__(self, output_size, mlp_hidden_sizes, mlp_activation, **params):
         super(MLP, self).__init__()
         self.input_size = 4
-        self.output_size = output_size
-        self.hidden_size = 5
-        self.fc1 = torch.nn.Linear(self.input_size, self.output_size)
+        self.linear_sizes = [self.input_size] + mlp_hidden_sizes + [output_size]
+
+        self.fcs = nn.ModuleList([nn.Linear(self.linear_sizes[i], self.linear_sizes[i+1]) for i in range(len(self.linear_sizes) - 1) ])
+
+        self.activation = {
+            "tanh": nn.Tanh,
+            "relu": nn.ReLU
+        }[mlp_activation]()
 
     def forward(self, x):
-        output = self.fc1(x)
+        h = x
 
-        return output
+        for fc in self.fcs:
+            h = fc(h)
+            h = self.activation(h)
+
+        return h

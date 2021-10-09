@@ -12,14 +12,20 @@ class ConfigLoader:
         parser.add_argument("--preprocessor", default="basic_features", type=str,
                             help="Preprocessor function applied to the raw data")
         parser.add_argument("--metrics", type=str, nargs='+', default=["mse", "r2"], help="List of metrics to be calculated")
-        parser.add_argument("--batch_size", type=int, default=21)
-        parser.add_argument("--shuffle", type=bool, default=True)
-        parser.add_argument("--num_epochs", type=int, default=1)
-        parser.add_argument("--num_rounds", type=int, default=100)
 
         # Federated Trainer Params
         parser.add_argument("--lr", type=float, default=1e-3)
         parser.add_argument("--participation", type=float, default=1.0)
+        parser.add_argument("--batch_size", type=int, default=21)
+        parser.add_argument("--shuffle", type=bool, default=True)
+        parser.add_argument("--num_epochs", type=int, default=1)
+        parser.add_argument("--num_rounds", type=int, default=100)
+        parser.add_argument("--loss", type=str, default="smooth_l1")
+
+        ## NN Model Parameters
+        # MLP Parameters
+        parser.add_argument("--mlp_hidden_sizes", type=list, default=[50, 25])
+        parser.add_argument("--mlp_activation", type=str, default="relu")
 
         cfg = vars(parser.parse_args())
 
