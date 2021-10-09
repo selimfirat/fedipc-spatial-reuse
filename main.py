@@ -1,10 +1,12 @@
+from torch.utils.data import DataLoader
+
 from config_loader import ConfigLoader
-from data_loader import DataLoader
+from dataset import SRDataset, get_data_loaders
 from evaluator import Evaluator
 from federated_trainers.federated_averaging_trainer import FederatedAveragingTrainer
+from nn_models import get_nn_model
+from preprocessors import get_preprocessor
 from utils import seed_everything
-from model_builder import ModelBuilder
-from preprocessor import Preprocessor
 
 def main():
     # Set seed
@@ -14,46 +16,32 @@ def main():
     cfg_loader = ConfigLoader()
     cfg = cfg_loader.load_by_cli()
 
-    # Load Data
-    data_loader = DataLoader(cfg["scenario"])
-    nodes_data, y_true_dict, train_contexts, test_contexts = data_loader.get_data()
+    # Download/Load Data
+    train_loader, test_loader = get_data_loaders(cfg["scenario"])
 
     # Preprocess data
-    preprocessor = Preprocessor(cfg["preprocessor"], cfg["scenario"])
-    nodes_features, nodes_labels, nodes_thresholds = preprocessor.apply(nodes_data, y_true_dict, train_contexts, test_contexts)
+    preprocessor = get_preprocessor(cfg)
+    train_loader, test_loader = preprocessor.fit_transform(train_loader, test_loader)
 
-    # Build models
-    input_size = list(nodes_features.values())[0].shape[1]
-    output_size = 1 if cfg["scenario"] == 1 else 4
-    model_builder = ModelBuilder(nn_model=cfg["nn_model"], input_size=input_size, hidden_size=10, output_size=output_size)
-    model = model_builder.instantiate_model()
+    # Get NN model
+    cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
+    model = get_nn_model(cfg)
 
     # Train models
-    trainer = FederatedAveragingTrainer(model, num_rounds=15, participation=1.0, num_epochs=15, lr=1e-3, batch_size=16)
+    trainer = FederatedAveragingTrainer(model, **cfg)
+    trainer.train(train_loader)
 
-    trainer.train(nodes_features, nodes_labels, train_contexts)
-
-    # Train metrics
-    y_pred = trainer.predict(nodes_features, train_contexts)
-    y_pred_dict = Evaluator.build_pred_dict(y_pred, train_contexts, nodes_thresholds)
-
-    # Evaluate results
+    # Evaluate
     evaluator = Evaluator(cfg["metrics"])
 
-    res = evaluator.calculate(y_true_dict, y_pred_dict)
+    y_true, y_pred = trainer.predict(train_loader)
+    eval_train = evaluator.calculate(y_true, y_pred)
 
-    print("Training", res)
+    print("Eval Train", eval_train)
 
-    # Validation metrics
-    y_pred = trainer.predict(nodes_features, test_contexts)
-    y_pred_dict = Evaluator.build_pred_dict(y_pred, test_contexts, nodes_thresholds)
-
-    # Evaluate results
-    evaluator = Evaluator(cfg["metrics"])
-
-    res = evaluator.calculate(y_true_dict, y_pred_dict)
-
-    print("Validation", res)
+    y_true, y_pred = trainer.predict(test_loader)
+    eval_test = evaluator.calculate(y_true, y_pred)
+    print("Eval Test", eval_test)
 
 
 if __name__ == "__main__":

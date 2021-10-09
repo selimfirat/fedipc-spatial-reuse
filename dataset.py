@@ -1,3 +1,4 @@
+from torch.utils.data import Dataset, DataLoader
 import os
 import pandas as pd
 import pickle
@@ -6,14 +7,83 @@ from sklearn.model_selection import train_test_split
 import requests
 import zipfile
 
-class DataLoader:
+
+def get_data_loaders(scenario):
+    data_downloader = DataDownloader(scenario)
+
+    train_data = SRDataset(data_downloader, is_train=True)
+    test_data = SRDataset(data_downloader, is_train=False)
+
+    train_loader = DataLoader(train_data)
+    test_loader = DataLoader(test_data)
+
+    return train_loader, test_loader
+
+
+class SRDataset(Dataset):
+
+    def __init__(self, data_downloader, is_train):
+        self.is_train = is_train
+        self.nodes_data, self.y_true_dict, train_contexts, test_contexts = data_downloader.get_data()
+
+        self.contexts = train_contexts if self.is_train else test_contexts
+
+    def __len__(self):
+
+        return len(self.contexts)
+
+    def __getitem__(self, idx):
+        context_idx = self.contexts[idx]
+
+        context_features = self.nodes_data[context_idx]
+        labels = self.y_true_dict[context_idx]
+
+        return context_idx, context_features, labels
+
+
+class SRProcessedDataset(Dataset):
+
+    def __init__(self, context_indices, features, labels, node_batch_size, node_shuffle):
+        self.context_data_loaders = []
+
+        for context_features, context_labels in zip(features, labels):
+            cds = DataLoader(ContextDataset(context_features, context_labels), shuffle=node_shuffle, batch_size=node_batch_size)
+            self.context_data_loaders.append(cds)
+
+        self.context_indices = context_indices
+
+    def __len__(self):
+
+        return len(self.context_indices)
+
+    def __getitem__(self, idx):
+
+        return self.context_indices[idx], self.context_data_loaders[idx]
+
+
+class ContextDataset(Dataset):
+
+    def __init__(self, features, labels):
+        self.features = features
+        self.labels = labels
+
+    def __getitem__(self, idx):
+
+        return self.features[idx], self.labels[idx]
+
+    def __len__(self):
+
+        return len(self.labels)
+
+
+class DataDownloader:
 
     def __init__(self, scenario=1, use_cache=True):
         self.data_path = "data"
         self.outputs_path = f"{self.data_path}/output_11ax_sr_simulations_sce{scenario}.txt"
         self.inputs_path = f"{self.data_path}/simulator_input_files_sce{scenario}"
         self.use_cache = use_cache
-        
+
         self.cache_path = f"tmp/data_scenario{scenario}.pkl"
 
         self.inputs_url = f"https://zenodo.org/record/5506248/files/simulator_input_files_sce{scenario}.zip?download=1"
@@ -82,17 +152,17 @@ class DataLoader:
                 cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
                 cur_simulation["threshold"] = "-" + cur_simulation["threshold"]
             else:
-                nums = re.findall('(\d+\.\d+|nan|-nan)', line)
-                nums = [num.replace("nan", "0") for num in nums] # TODO: Fix nan issue
+                nums = re.findall('(-?\d+\.\d+|nan|-nan)', line)
+                nums = [num.replace("nan", "0") for num in nums]  # TODO: Fix nan issue
                 cur_simulation[cur_step[0]] = list(map(float, nums))
 
-            cur_step = cur_step[1:] + cur_step[:1] # turn step
+            cur_step = cur_step[1:] + cur_step[:1]  # turn step
 
             if cur_step[0] == "initial":
                 if not cur_simulation["scenario"] in nodes:
                     nodes[cur_simulation["scenario"]] = {}
 
-                cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"]
+                #cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
 
                 nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
 
@@ -109,9 +179,9 @@ class DataLoader:
         for sim in nodes.keys():
             for threshold in nodes[sim].keys():
                 y_true_dict[sim][threshold] = nodes[sim][threshold]["throughput"][0]
-        
+
         return y_true_dict
-    
+
     def _load_inputs(self):
         inputs = {}
         for fname in os.listdir(self.inputs_path):
@@ -123,13 +193,3 @@ class DataLoader:
                 inputs[fname] = df
 
         return inputs
-
-
-if __name__ == "__main__":
-    # Test data loading
-    r = DataLoader()
-
-    nodes, y_true_dict, train_contexts, test_contexts = r.get_data()
-
-    print(nodes["0000"]["-68"]["throughput"])
-    assert nodes["0000"]["-68"]["throughput"] == [17.0]

@@ -1,5 +1,11 @@
 from nn_models.mlp import MLP
+from nn_models.separate_recurrents import SeparateRecurrentsModel
 
-modelname_2_modelcls = {
-    "mlp": MLP
+nn_model_map = {
+    "mlp": MLP,
+    "separate_recurrents": SeparateRecurrentsModel,
 }
+
+def get_nn_model(cfg):
+
+        return nn_model_map[cfg['nn_model']](**cfg)

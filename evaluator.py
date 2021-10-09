@@ -1,22 +1,18 @@
 from sklearn.metrics import mean_squared_error, r2_score
+import torch
 
 
 # TODO: Implement a metric for fairness since the aim is "increasing performance while reducing the number of undesired situations (e.g. poor fairness)."
-# TODO: Implement a metric for evaluating ranking of the throughputs.
 class Evaluator:
 
-    def __init__(self, metrics=["mse", "r2"]):
+    def __init__(self, metrics=None):
+        if metrics is None:
+            metrics = ["mse", "r2"]
         self.metrics = metrics
 
     def calculate(self, y_true_dict, y_pred_dict):
-
-        y_true = []
-        y_pred = []
-
-        for sim in y_pred_dict.keys():
-            for threshold in y_pred_dict[sim]:
-                y_true.append(y_true_dict[sim][threshold])
-                y_pred.append(y_pred_dict[sim][threshold].item())
+        y_true = torch.cat([y_true_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy()
+        y_pred = torch.cat([y_pred_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy()
 
         results = {}
 
@@ -33,12 +29,3 @@ class Evaluator:
     def r2(self, y_true, y_pred):
 
         return r2_score(y_true, y_pred)
-
-    @staticmethod
-    def build_pred_dict(y_pred, contexts, thresholds):
-        y_pred_dict = {
-            context_key: { threshold: y_pred[context_key][idx] for idx, threshold in enumerate(thresholds[context_key])
-                           } for context_key in contexts
-        }
-
-        return y_pred_dict
