@@ -27,9 +27,11 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                     continue
 
                 self.model.load_state_dict(original_state_dict)
+                self.model = self.model.to(self.cfg["device"])
                 optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"])
 
                 self.train_node(self.model, optimizer, context_data_loader)
+                self.model = self.model.to("cpu")
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
 
@@ -49,8 +51,10 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                 model.zero_grad()
                 optimizer.zero_grad()
 
+                X = X.to(self.cfg["device"])
                 y_pred = model.forward(X)[:, 0]
 
+                y = y.to(self.cfg["device"])
                 cur_loss = self.loss(y_pred, y)
 
                 cur_loss.backward()

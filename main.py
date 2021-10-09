@@ -30,7 +30,6 @@ def main():
 
     y_true, y_pred = trainer.predict(train_loader)
     eval_train = evaluator.calculate(y_true, y_pred)
-
     print("Eval Train", eval_train)
 
     y_true, y_pred = trainer.predict(test_loader)

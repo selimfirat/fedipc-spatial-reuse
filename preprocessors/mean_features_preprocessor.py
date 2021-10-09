@@ -33,7 +33,7 @@ class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
-            threshold_data["threshold"] = int(threshold_data["threshold"][0])
+            threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
 
             for fi in range(len(feature_names)):
                 features[idx, fi] = torch.mean(torch.FloatTensor(threshold_data[feature_names[fi]]))

@@ -23,8 +23,10 @@ class MLP(nn.Module):
     def forward(self, x):
         h = x
 
-        for fc in self.fcs:
+        for i, fc in enumerate(self.fcs, 1):
             h = fc(h)
-            h = self.activation(h)
+
+            if i != len(self.fcs):
+                h = self.activation(h)
 
         return h

@@ -95,7 +95,7 @@ class DataDownloader:
 
             zip_target = f"{self.inputs_path}.zip"
 
-            open(zip_target, 'wb', encoding="utf-8").write(r.content)
+            open(zip_target, 'wb').write(r.content)
 
             with zipfile.ZipFile(zip_target, "r") as zip_ref:
                 zip_ref.extractall(self.data_path)

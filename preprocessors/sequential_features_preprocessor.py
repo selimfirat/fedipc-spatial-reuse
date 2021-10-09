@@ -35,7 +35,7 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
             threshold_data["threshold"] = int(threshold_data["threshold"])
 
             for fname in feature_names:
-                features[idx][fname] = torch.from_numpy(np.array(threshold_data[fname]))
+                features[idx][fname] = torch.FloatTensor(threshold_data[fname])
 
             labels[idx] = node_labels[threshold]
 

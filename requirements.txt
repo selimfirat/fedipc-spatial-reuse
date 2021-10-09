@@ -1,8 +1,8 @@
 pandas
 argparse
-sklearn
+scikit-learn
 numpy
 torch
 pytorch-lightning
 requests
-zipfile
+dill
