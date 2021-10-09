@@ -1,11 +1,8 @@
-from torch.utils.data import DataLoader
-
 from config_loader import ConfigLoader
-from dataset import SRDataset, get_data_loaders
 from evaluator import Evaluator
-from federated_trainers.federated_averaging_trainer import FederatedAveragingTrainer
-from maps import Maps
+from mapper import Mapper
 from utils import seed_everything
+
 
 def main():
     # Set seed
@@ -16,16 +13,16 @@ def main():
     cfg = cfg_loader.load_by_cli()
 
     # Download/Load Data
-    train_loader, test_loader = get_data_loaders(cfg["scenario"])
+    train_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
 
     # Preprocess data
-    preprocessor = Maps.preprocessors[cfg['preprocessor']](**cfg)
+    preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(**cfg)
     train_loader, test_loader = preprocessor.fit_transform(train_loader, test_loader)
 
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
 
     # Train models
-    trainer = FederatedAveragingTrainer(**cfg)
+    trainer = Mapper.get_federated_trainer(cfg["federated_trainer"])(**cfg)
     trainer.train(train_loader)
 
     # Evaluate

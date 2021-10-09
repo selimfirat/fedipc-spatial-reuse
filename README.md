@@ -13,7 +13,7 @@ FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 ## Command Line  Interface Arguments
 * Run `python main.py --help` for details.
 * `--scenario` (default: `1`)
-    * `1` or `1`
+    * `1` or `2`
 * `--preprocessor` (default: `basic_features`)
     * `basic_features`
 * `--nn_model` (default: `mlp`)
@@ -28,17 +28,18 @@ FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 
 ### Adding New Neural Network Model
 1. Create a model extending `torch.nn.Module` in `./nn_models` directory.
-2. Import the new model class and add an entry of <`$model_name`, `$model_class`> to the `modelname_2_modelcls` dictionary in `./nn_models/__init__.py` file.
-3. Use the model with `--nn_model $model_name` cli argument.
+2. Update `./mapper.py`.
+3. Use the new model with `--nn_model $model_name` cli argument.
 
 ### Adding New Federated Learning Architecture
 1. Create a trainer class extending `federated_trainers.abstract_base_federated_trainer.AbstractBaseFederatedTrainer` in `./federated_trainers` directory.
-2. Import the new federated learning trainer class and add an entry of <`$trainer_name`, `$trainer_class`> to the `modelname_2_modelcls` dictionary in `./federated_trainers/__init__.py` file.
-3. Use the FL architecture with `--fed_model $trainer_name` cli argument.
+2. Update `./mapper.py`.
+3. Use the new FL architecture with `--fed_model $trainer_name` cli argument.
 
 ### Adding New Preprocessor (Feature Extractor)
-1. Define a new function named `$new_preprocessor_name` in `preprocessor.py`.
-2. Use the preprocessor with `--preprocessor $new_preprocessor_name`.
+1. Create a preprocessor class extending `federated_trainers.abstract_base_preprocessor.AbstractBasePreprocessor` in `./preprocessors` directory.
+2. Update `./mapper.py`.
+3. Use the new preprocessor with `--preprocessor $new_preprocessor_name`.
 
 ### Adding New CLI Argument
 1. Add the argparse argument via `parser.add_argument` in `./config_loader.py` file. Tutorial: [this link](https://www.pythonforbeginners.com/argparse/argparse-tutorial).

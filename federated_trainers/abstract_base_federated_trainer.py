@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from maps import Maps
+from mapper import Mapper
+
 
 class AbstractBaseFederatedTrainer(ABC):
 
-    def __init__(self, **cfg):
-        self.cfg = cfg
-        self.nn_model = self.cfg["nn_model"]
-        self.loss = cfg["loss"]
+    def __init__(self, nn_model, loss, **cfg):
+        self.model = Mapper.get_nn_model(nn_model)(**cfg)
+        self.loss = Mapper.get_loss(loss)()
 
     @abstractmethod
     def train(self, train_loader):
@@ -19,11 +19,3 @@ class AbstractBaseFederatedTrainer(ABC):
     @abstractmethod
     def predict(self, data_loader):
         pass
-
-    def get_loss(self):
-
-        return Maps.losses[self.loss]()
-
-    def get_nn_model(self):
-
-        return Maps.nn_models[self.nn_model](**self.cfg)

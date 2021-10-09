@@ -8,18 +8,6 @@ import requests
 import zipfile
 
 
-def get_data_loaders(scenario):
-    data_downloader = DataDownloader(scenario)
-
-    train_data = SRDataset(data_downloader, is_train=True)
-    test_data = SRDataset(data_downloader, is_train=False)
-
-    train_loader = DataLoader(train_data)
-    test_loader = DataLoader(test_data)
-
-    return train_loader, test_loader
-
-
 class SRDataset(Dataset):
 
     def __init__(self, data_downloader, is_train):
@@ -107,7 +95,7 @@ class DataDownloader:
 
             zip_target = f"{self.inputs_path}.zip"
 
-            open(zip_target, 'wb').write(r.content)
+            open(zip_target, 'wb', encoding="utf-8").write(r.content)
 
             with zipfile.ZipFile(zip_target, "r") as zip_ref:
                 zip_ref.extractall(self.data_path)
@@ -137,7 +125,7 @@ class DataDownloader:
     def _load_nodes(self):
         inputs = self._load_inputs()
 
-        f = open(self.outputs_path, "r", encoding="ISO-8859-1")
+        f = open(self.outputs_path, "r", encoding="utf-8")
 
         nodes = {}
 
@@ -162,7 +150,7 @@ class DataDownloader:
                 if not cur_simulation["scenario"] in nodes:
                     nodes[cur_simulation["scenario"]] = {}
 
-                #cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
+                # cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
 
                 nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
 

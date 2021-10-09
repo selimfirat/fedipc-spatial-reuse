@@ -9,10 +9,7 @@ from federated_trainers.abstract_base_federated_trainer import AbstractBaseFeder
 class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
 
     def __init__(self, **cfg):
-        super().__init__(**cfg)
-        
-        self.model = self.get_nn_model()
-        self.loss = self.get_loss()
+        super(FederatedAveragingTrainer, self).__init__(**cfg)
 
         self.cfg = cfg
 
