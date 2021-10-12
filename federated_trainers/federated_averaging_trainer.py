@@ -4,6 +4,7 @@ from torch.optim import SGD
 from tqdm import tqdm
 from copy import deepcopy
 from federated_trainers.abstract_base_federated_trainer import AbstractBaseFederatedTrainer
+from utils import to_device
 
 
 class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
@@ -27,11 +28,11 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                     continue
 
                 self.model.load_state_dict(original_state_dict)
-                self.model = self.model.to(self.cfg["device"])
+                self.model = to_device(self.model, self.cfg["device"])
                 optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"])
 
                 self.train_node(self.model, optimizer, context_data_loader)
-                self.model = self.model.to("cpu")
+                self.model = to_device(self.model, "cpu")
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
 
@@ -51,10 +52,10 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                 model.zero_grad()
                 optimizer.zero_grad()
 
-                X = X.to(self.cfg["device"])
+                X = to_device(X, self.cfg["device"])
                 y_pred = model.forward(X)[:, 0]
 
-                y = y.to(self.cfg["device"])
+                y = to_device(y, self.cfg["device"])
                 cur_loss = self.loss(y_pred, y)
 
                 cur_loss.backward()

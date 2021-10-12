@@ -32,10 +32,17 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
-            threshold_data["threshold"] = int(threshold_data["threshold"])
+            threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
 
             for fname in feature_names:
-                features[idx][fname] = torch.FloatTensor(threshold_data[fname])
+                new_features = torch.FloatTensor(threshold_data[fname]).unsqueeze(-1)
+
+                fname = "combined" if fname != "interference" else fname
+
+                if fname == "interference" or fname not in features[idx].keys():
+                    features[idx][fname] = new_features
+                else:
+                    features[idx][fname] = torch.cat([features[idx][fname], new_features], -1)
 
             labels[idx] = node_labels[threshold]
 

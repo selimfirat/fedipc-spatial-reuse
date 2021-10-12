@@ -26,7 +26,7 @@ class MLP(nn.Module):
         for i, fc in enumerate(self.fcs, 1):
             h = fc(h)
 
-            if i != len(self.fcs):
+            if i < len(self.fcs):
                 h = self.activation(h)
 
         return h

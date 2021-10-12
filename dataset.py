@@ -140,8 +140,8 @@ class DataDownloader:
                 cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
                 cur_simulation["threshold"] = "-" + cur_simulation["threshold"]
             else:
-                nums = re.findall('(-?\d+\.\d+|nan|-nan)', line)
-                nums = [num.replace("nan", "0") for num in nums]  # TODO: Fix nan issue
+                nums = re.findall('(-?\d+\.\d+|-nan|-inf|nan|inf)', line)
+                nums = [num.replace("nan", "0").replace("inf", "0") for num in nums]  # TODO: Fix nan issue
                 cur_simulation[cur_step[0]] = list(map(float, nums))
 
             cur_step = cur_step[1:] + cur_step[:1]  # turn step

@@ -56,3 +56,13 @@ class Mapper:
         test_loader = DataLoader(test_data)
 
         return train_loader, test_loader
+
+    @staticmethod
+    def get_input_normalizer(input_normalizer):
+        from preprocessors.input_normalizers.standard_input_normalizer import StandardInputNormalizer
+        from preprocessors.input_normalizers.dummy_input_normalizer import DummyInputNormalizer
+
+        return {
+            "none": DummyInputNormalizer,
+            "standard": StandardInputNormalizer
+        }[input_normalizer]
