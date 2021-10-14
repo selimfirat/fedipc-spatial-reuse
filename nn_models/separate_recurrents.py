@@ -28,6 +28,4 @@ class SeparateRecurrentsModel(nn.Module):
 
         out = self.linear(out)
 
-        print(out.shape)
-
         return out
