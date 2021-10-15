@@ -16,13 +16,19 @@ class ConfigLoader:
         parser.add_argument("--device", type=str, default="cpu")
 
         # Federated Trainer Params
-        parser.add_argument("--lr", type=float, default=1e-3)
         parser.add_argument("--participation", type=float, default=1.0)
         parser.add_argument("--batch_size", type=int, default=21)
         parser.add_argument("--shuffle", type=bool, default=True)
         parser.add_argument("--num_epochs", type=int, default=1)
         parser.add_argument("--num_rounds", type=int, default=100)
         parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
+
+        # Local SGD Parameters
+        parser.add_argument("--lr", type=float, default=1e-3)
+        parser.add_argument("--momentum", type=float, default=0.0)
+        parser.add_argument("--nesterov", type=float, default=False)
+        parser.add_argument("--weight_decay", type=float, default=0.0)
+        parser.add_argument("--dampening", type=float, default=0.0)
 
         # FedProx params
         parser.add_argument("--mu", type=float, default=1e-2, help="Fedprox proximal term multiplier mu.")

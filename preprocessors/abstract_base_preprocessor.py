@@ -17,6 +17,7 @@ class AbstractBasePreprocessor(ABC):
 
         self.input_scaler = input_scaler_ins
         self.output_scaler = output_scaler_ins
+        self.scenario = scenario
 
     @abstractmethod
     def fit(self, train_loader):

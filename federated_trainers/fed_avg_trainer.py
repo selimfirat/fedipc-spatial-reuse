@@ -29,7 +29,7 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
                 self.model.load_state_dict(original_state_dict)
                 self.model = to_device(self.model, self.cfg["device"])
-                optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"])
+                optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"], momentum=self.cfg["momentum"], nesterov=self.cfg["nesterov"], dampening=self.cfg["dampening"], weight_decay=self.cfg["weight_decay"])
 
                 self.train_node(self.model, optimizer, context_data_loader, original_state_dict)
                 self.model = to_device(self.model, "cpu")

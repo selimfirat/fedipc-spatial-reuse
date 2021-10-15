@@ -37,11 +37,13 @@ class Mapper:
     def get_preprocessor(preprocessor):
         from preprocessors.mean_features_preprocessor import MeanFeaturesPreprocessor
         from preprocessors.sequential_features_preprocessor import SequentialFeaturesPreprocessor
+        from preprocessors.input_features_preprocessor import InputFeaturesPreprocessor
 
         return {
             "mean_features": MeanFeaturesPreprocessor,
             "padded_features": PaddedFeaturesPreprocessor,
-            "sequential_features": SequentialFeaturesPreprocessor
+            "sequential_features": SequentialFeaturesPreprocessor,
+            "input_features": InputFeaturesPreprocessor,
         }[preprocessor]
 
     @staticmethod

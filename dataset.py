@@ -176,7 +176,7 @@ class DataDownloader:
             if fname.endswith(".csv"):
                 fpath = os.path.join(self.inputs_path, fname)
 
-                df = pd.read_csv(fpath)
+                df = pd.read_csv(fpath, delimiter=";")
 
                 inputs[fname] = df.to_dict()
 
