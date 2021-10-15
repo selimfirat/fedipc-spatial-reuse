@@ -25,7 +25,7 @@ class ConfigLoader:
         parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
 
         # FedProx params
-        parser.add_argument("--mu", type=str, default=1e-2, help="Fedprox proximal term multiplier mu.")
+        parser.add_argument("--mu", type=float, default=1e-2, help="Fedprox proximal term multiplier mu.")
 
         ## NN Model Parameters
         # MLP Parameters
