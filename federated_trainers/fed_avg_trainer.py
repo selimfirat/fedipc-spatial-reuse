@@ -7,10 +7,10 @@ from federated_trainers.abstract_base_federated_trainer import AbstractBaseFeder
 from utils import to_device
 
 
-class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
+class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
     def __init__(self, **cfg):
-        super(FederatedAveragingTrainer, self).__init__(**cfg)
+        super(FedAvgTrainer, self).__init__(**cfg)
 
         self.cfg = cfg
 
@@ -31,14 +31,14 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                 self.model = to_device(self.model, self.cfg["device"])
                 optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"])
 
-                self.train_node(self.model, optimizer, context_data_loader)
+                self.train_node(self.model, optimizer, context_data_loader, original_state_dict)
                 self.model = to_device(self.model, "cpu")
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
 
             self.aggregate(state_dicts)
 
-    def train_node(self, model, optimizer, context_data_loader):
+    def train_node(self, model, optimizer, context_data_loader, original_state_dict):
         model.train()
 
         total_loss = .0
@@ -56,7 +56,7 @@ class FederatedAveragingTrainer(AbstractBaseFederatedTrainer):
                 y_pred = model.forward(X)[:, 0]
 
                 y = to_device(y, self.cfg["device"])
-                cur_loss = self.loss(y_pred, y)
+                cur_loss = self.loss(y_pred, y, self.model.state_dict(), original_state_dict)
 
                 cur_loss.backward()
 

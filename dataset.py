@@ -150,7 +150,7 @@ class DataDownloader:
                 if not cur_simulation["scenario"] in nodes:
                     nodes[cur_simulation["scenario"]] = {}
 
-                # cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
+                cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
 
                 nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
 
@@ -178,6 +178,6 @@ class DataDownloader:
 
                 df = pd.read_csv(fpath)
 
-                inputs[fname] = df
+                inputs[fname] = df.to_dict()
 
         return inputs

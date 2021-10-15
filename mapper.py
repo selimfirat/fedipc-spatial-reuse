@@ -5,10 +5,12 @@ class Mapper:
 
     @staticmethod
     def get_federated_trainer(federated_trainer):
-        from federated_trainers.federated_averaging_trainer import FederatedAveragingTrainer
+        from federated_trainers.fed_avg_trainer import FedAvgTrainer
+        from federated_trainers.fed_prox_trainer import FedProxTrainer
 
         return {
-            "fed_avg": FederatedAveragingTrainer
+            "fedavg": FedAvgTrainer,
+            "fedprox": FedProxTrainer,
         }[federated_trainer]
 
     @staticmethod

@@ -7,7 +7,7 @@ class ConfigLoader:
         parser = ArgumentParser(description="FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.")
 
         parser.add_argument("--scenario", default=1, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
-        parser.add_argument("--federated_trainer", default="fed_avg", type=str, help="Federated Architecture")
+        parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
         parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
         parser.add_argument("--preprocessor", default="mean_features", type=str, help="Preprocessor applied to the raw data")
         parser.add_argument("--input_scaler", default="standard", type=str, help="Normalizer applied to the preprocessed data")
@@ -23,6 +23,9 @@ class ConfigLoader:
         parser.add_argument("--num_epochs", type=int, default=1)
         parser.add_argument("--num_rounds", type=int, default=100)
         parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
+
+        # FedProx params
+        parser.add_argument("--mu", type=str, default=1e-2, help="Fedprox proximal term multiplier mu.")
 
         ## NN Model Parameters
         # MLP Parameters

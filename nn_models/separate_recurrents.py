@@ -11,10 +11,10 @@ class SeparateRecurrentsModel(nn.Module):
 
         model_ins = nn.GRU
 
-        self.model_combined = model_ins(3, 32, 2, batch_first=True, bidirectional=True)
-        self.model_interference = model_ins(1, 32, 2, batch_first=True, bidirectional=True)
+        self.model_combined = model_ins(3, 8, 2, batch_first=True, bidirectional=True)
+        self.model_interference = model_ins(1, 8, 2, batch_first=True, bidirectional=True)
 
-        self.linear = nn.Linear(128, self.output_size)
+        self.linear = nn.Linear(32, self.output_size)
 
     def forward(self, x):
 

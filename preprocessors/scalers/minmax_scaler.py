@@ -17,7 +17,7 @@ class MinMaxScaler:
 
     def transform(self, X):
 
-        X = [(x - self.min ) / self.diff for x in X]
+        X = [(x - self.min) / self.diff for x in X]
 
         return X
 
