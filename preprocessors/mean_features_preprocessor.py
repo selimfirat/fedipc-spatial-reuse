@@ -1,6 +1,6 @@
 import torch
 from preprocessors.abstract_base_preprocessor import AbstractBasePreprocessor
-import numpy as np
+
 
 class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
 

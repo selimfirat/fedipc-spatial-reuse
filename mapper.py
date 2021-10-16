@@ -1,3 +1,4 @@
+from preprocessors.all_features_preprocessor import AllFeaturesPreprocessor
 from preprocessors.padded_features_preprocessor import PaddedFeaturesPreprocessor
 
 
@@ -44,6 +45,7 @@ class Mapper:
             "padded_features": PaddedFeaturesPreprocessor,
             "sequential_features": SequentialFeaturesPreprocessor,
             "input_features": InputFeaturesPreprocessor,
+            "all_features": AllFeaturesPreprocessor,
         }[preprocessor]
 
     @staticmethod

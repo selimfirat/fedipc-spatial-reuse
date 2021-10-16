@@ -24,6 +24,7 @@ class MLP(nn.Module):
     def forward(self, x):
         h = x
 
+
         for i, fc in enumerate(self.fcs, 1):
             h = fc(h)
 
