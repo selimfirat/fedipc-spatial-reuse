@@ -26,6 +26,8 @@ class StandardScaler:
         self.mean = rt.mean(dim=[0, 1])
         self.std = rt.std(dim=[0, 1])
 
+        self.std[self.std == 0.0] = 1.0
+
         return self
 
     def fit_dict(self, X):
@@ -42,6 +44,7 @@ class StandardScaler:
             rt = torch.stack(R[key], dim=0)
             self.mean[key] = rt.mean(dim=[0, 1])
             self.std[key] = rt.std(dim=[0, 1])
+            self.std[key][self.std[key] == 0.0] = 1.0
 
         return self
 

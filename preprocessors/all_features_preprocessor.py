@@ -2,6 +2,7 @@ import torch
 from preprocessors.abstract_base_preprocessor import AbstractBasePreprocessor
 import numpy as np
 
+
 class AllFeaturesPreprocessor(AbstractBasePreprocessor):
 
     def fit(self, train_loader):
@@ -20,31 +21,6 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
             all_labels.append(labels)
 
         return all_context_indices, all_features, all_labels
-
-    def _process_node(self, node_data, node_labels):
-
-        feature_names = ["threshold", "interference", "rssi", "sinr"]
-
-        num_data = len(node_data.keys())
-        num_features = len(feature_names)
-
-        features = torch.empty((num_data, num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
-
-        for idx, (threshold, threshold_data) in enumerate(node_data.items()):
-
-            threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
-
-            for fi in range(len(feature_names)):
-                features[idx, fi] = torch.mean(torch.FloatTensor(threshold_data[feature_names[fi]]))
-
-            labels[idx] = node_labels[threshold]
-
-        input_features, _ = self._process_node_input_features(node_data, node_labels)
-
-        features = torch.cat([features, input_features], dim=1)
-
-        return features, labels
 
     def _process_node_input_features(self, node_data, node_labels):
 
@@ -96,3 +72,61 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
                 feat_idx += 2
 
         return features, labels
+
+    def _process_node(self, node_data, node_labels):
+
+        feature_names = ["threshold", "interference", "rssi", "sinr"]
+
+        num_data = len(node_data.keys())
+        num_features = len(feature_names)
+
+        features = torch.empty((num_data, 6 * num_features), dtype=torch.float32)
+        labels = torch.empty((num_data,), dtype=torch.float32)
+
+        for idx, (threshold, threshold_data) in enumerate(node_data.items()):
+
+            threshold_data["threshold"] = [float(threshold_data["threshold"][0])]
+
+            for fi, feat_name in enumerate(feature_names):
+                feats = torch.FloatTensor(threshold_data[feat_name])
+                features[idx, 6*fi + 0] = feats.mean()
+                features[idx, 6*fi + 1] = feats.median()
+                features[idx, 6*fi + 2] = feats.min()
+                features[idx, 6*fi + 3] = feats.max()
+                features[idx, 6*fi + 4] = ((feats - feats.mean()) ** 2).sum().sqrt() / feats.shape[0]
+                features[idx, 6*fi + 5] = feats.shape[0]
+
+            labels[idx] = node_labels[threshold]
+
+        input_features, _ = self._process_node_input_features(node_data, node_labels)
+        padded_features, _ = self._process_node_input_features(node_data, node_labels)
+
+        features = torch.cat([features, input_features, padded_features], dim=1)
+
+        return features, labels
+
+    def _process_node_padded_features(self, node_data, node_labels, max_lens):
+
+        num_data = len(node_data.keys())
+        labels = torch.empty((num_data,), dtype=torch.float32)
+
+        for idx, (threshold, threshold_data) in enumerate(node_data.items()):
+            threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
+
+            labels[idx] = node_labels[threshold]
+
+        feature_names = ["threshold", "interference", "rssi", "sinr"]
+        all_features = []
+        for fname in feature_names:
+
+            features = torch.zeros((num_data, max_lens[fname]), dtype=torch.float32)
+
+            for idx, (threshold, threshold_data) in enumerate(node_data.items()):
+                cur_features = torch.FloatTensor(threshold_data[fname])
+                features[idx, :cur_features.shape[0]] = cur_features
+
+            all_features.append(features)
+
+        all_features = torch.cat(all_features, dim=1)
+
+        return all_features, labels
