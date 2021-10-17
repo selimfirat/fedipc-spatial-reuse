@@ -74,7 +74,7 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
         for key in self.model.state_dict().keys():
             # TODO: implement n_k / n part (not required for now since all n_k / n values are equal)
-            new_state_dict[key] = torch.mean(torch.stack([sd[key].float() for sd in state_dicts.values()], dim=0), dim=0)
+            new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in state_dicts.values()], dim=0), dim=0)
 
         self.model.load_state_dict(new_state_dict)
 

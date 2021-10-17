@@ -28,20 +28,21 @@ class StatisticalFeaturesPreprocessor(AbstractBasePreprocessor):
         num_data = len(node_data.keys())
         num_features = len(feature_names)
 
-        features = torch.empty((num_data, 5 * num_features), dtype=torch.float32)
+        features = torch.empty((num_data, 6 * num_features), dtype=torch.float32)
         labels = torch.empty((num_data,), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
-            threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
+            threshold_data["threshold"] = [float(threshold_data["threshold"][0])]
 
             for fi, feat_name in enumerate(feature_names):
                 feats = torch.FloatTensor(threshold_data[feat_name])
-                features[idx, num_features*fi + 0] = feats.mean()
-                features[idx, num_features*fi + 1] = feats.median()
-                features[idx, num_features*fi + 2] = feats.min()
-                features[idx, num_features*fi + 3] = feats.max()
-                features[idx, num_features*fi + 4] = torch.std(feats, unbiased=False)
+                features[idx, 6*fi + 0] = feats.mean()
+                features[idx, 6*fi + 1] = feats.median()
+                features[idx, 6*fi + 2] = feats.min()
+                features[idx, 6*fi + 3] = feats.max()
+                features[idx, 6*fi + 4] = ((feats - feats.mean()) ** 2).sum().sqrt() / feats.shape[0]
+                features[idx, 6*fi + 5] = feats.shape[0]
 
             labels[idx] = node_labels[threshold]
 
