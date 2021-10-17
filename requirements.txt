@@ -6,3 +6,4 @@ torch
 pytorch-lightning
 requests
 dill
+mlflow

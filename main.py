@@ -1,5 +1,6 @@
 from config_loader import ConfigLoader
 from evaluator import Evaluator
+from logger import Logger
 from mapper import Mapper
 from utils import seed_everything
 
@@ -11,6 +12,8 @@ def main():
     # Get arguments
     cfg_loader = ConfigLoader()
     cfg = cfg_loader.load_by_cli()
+
+    logger = Logger(**cfg)
 
     # Download/Load Data
     train_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
@@ -35,12 +38,16 @@ def main():
     y_true = output_scaler.revert(y_true)
     eval_train = evaluator.calculate(y_true, y_pred)
     print("Eval Train", eval_train)
+    logger.log_metrics({ f"train_{k}": v for k,v in eval_train.items() })
 
     y_true, y_pred = trainer.predict(test_loader)
     y_pred = output_scaler.revert(y_pred)
     y_true = output_scaler.revert(y_true)
     eval_test = evaluator.calculate(y_true, y_pred)
     print("Eval Test", eval_test)
+    logger.log_metrics({ f"test_{k}": v for k,v in eval_test.items() })
+
+    logger.close()
 
 
 if __name__ == "__main__":

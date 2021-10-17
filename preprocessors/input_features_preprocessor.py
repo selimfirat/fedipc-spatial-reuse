@@ -1,5 +1,6 @@
 import torch
 from preprocessors.abstract_base_preprocessor import AbstractBasePreprocessor
+import numpy as np
 
 
 class InputFeaturesPreprocessor(AbstractBasePreprocessor):
@@ -28,7 +29,7 @@ class InputFeaturesPreprocessor(AbstractBasePreprocessor):
 
 
         num_data = len(node_data.keys())
-        num_features =  (1 if self.scenario == 1 else 4) + len(feature_names) * (2 if self.scenario == 1 else 5) # 1 for AP and 4 for each "STA per AP". Only includes STAs connected to AP_A
+        num_features =  2 * (1 if self.scenario == 1 else 4) + len(feature_names) * (2 if self.scenario == 1 else 5) # 1 for AP and 4 for each "STA per AP". Only includes STAs connected to AP_A
 
         features = torch.zeros((num_data, num_features), dtype=torch.float32)
         labels = torch.empty((num_data,), dtype=torch.float32)
@@ -44,6 +45,7 @@ class InputFeaturesPreprocessor(AbstractBasePreprocessor):
             ap_a_loc = (None, None)
 
             dists = []
+            angles = []
 
             input_data = threshold_data["input_nodes"]
             for node_idx, node_code in input_data["node_code"].items():
@@ -55,12 +57,17 @@ class InputFeaturesPreprocessor(AbstractBasePreprocessor):
                 if node_code[0] == "AP_A":
                     ap_a_loc = (input_data["x(m)"][node_idx][0].float(), input_data["y(m)"][node_idx][0].float())
                 if "STA_A" in node_code[0]:
-                    dist = torch.sqrt((input_data["x(m)"][node_idx][0].float() - ap_a_loc[0])**2 + (input_data["y(m)"][node_idx][0].float() - ap_a_loc[1])**2)
+                    vec = (input_data["x(m)"][node_idx][0].float() - ap_a_loc[0], input_data["y(m)"][node_idx][0].float() - ap_a_loc[1])
 
+                    dist = torch.sqrt(vec[0]**2 + (vec[1])**2)
                     dists.append(dist)
 
-            for dist in dists:
+                    angle = np.arcsin(vec[1]/dist)
+                    angles.append(angle)
+
+            for dist, angle in zip(dists, angles):
                 features[idx][feat_idx] = dist
-                feat_idx += 1
+                features[idx][feat_idx + 1] = angle
+                feat_idx += 2
 
         return features, labels

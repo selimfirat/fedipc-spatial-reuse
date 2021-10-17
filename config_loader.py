@@ -6,6 +6,9 @@ class ConfigLoader:
     def load_by_cli(self):
         parser = ArgumentParser(description="FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.")
 
+        parser.add_argument("--mlflow_server", type=str, default=None)
+        parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse")
+
         parser.add_argument("--scenario", default=1, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
         parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
         parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
