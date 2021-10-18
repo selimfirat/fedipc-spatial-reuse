@@ -36,12 +36,12 @@ class PaddedFeaturesPreprocessor(AbstractBasePreprocessor):
     def _process_node(self, node_data, node_labels, max_lens):
 
         num_data = len(node_data.keys())
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
             threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         feature_names = ["threshold", "interference", "rssi", "sinr"]
         all_features = []

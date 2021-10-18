@@ -29,7 +29,7 @@ class StatisticalFeaturesPreprocessor(AbstractBasePreprocessor):
         num_features = len(feature_names)
 
         features = torch.empty((num_data, 6 * num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
@@ -44,6 +44,6 @@ class StatisticalFeaturesPreprocessor(AbstractBasePreprocessor):
                 features[idx, 6*fi + 4] = ((feats - feats.mean()) ** 2).sum().sqrt() / feats.shape[0]
                 features[idx, 6*fi + 5] = feats.shape[0]
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         return features, labels

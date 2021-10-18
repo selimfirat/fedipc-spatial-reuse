@@ -9,8 +9,8 @@ from utils import to_device
 
 class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
-    def __init__(self, **cfg):
-        super(FedAvgTrainer, self).__init__(**cfg)
+    def __init__(self, logger, **cfg):
+        super(FedAvgTrainer, self).__init__(logger, **cfg)
 
         self.cfg = cfg
 
@@ -23,6 +23,8 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
             original_state_dict = deepcopy(self.model.state_dict())
             state_dicts = {}
 
+            total_loss = .0
+
             for i, (context_key, context_data_loader) in enumerate(train_loader):
                 if i not in chosen_contexts:
                     continue
@@ -31,10 +33,12 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                 self.model = to_device(self.model, self.cfg["device"])
                 optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"], momentum=self.cfg["momentum"], nesterov=self.cfg["nesterov"], dampening=self.cfg["dampening"], weight_decay=self.cfg["weight_decay"])
 
-                self.train_node(self.model, optimizer, context_data_loader, original_state_dict)
+                total_loss += self.train_node(self.model, optimizer, context_data_loader, original_state_dict)
                 self.model = to_device(self.model, "cpu")
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
+
+            self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts))
 
             self.aggregate(state_dicts)
 
@@ -53,9 +57,10 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                 optimizer.zero_grad()
 
                 X = to_device(X, self.cfg["device"])
-                y_pred = model.forward(X)[:, 0]
+                y_pred = model.forward(X)
 
                 y = to_device(y, self.cfg["device"])
+
                 cur_loss = self.loss(y_pred, y, self.model.state_dict(), original_state_dict)
 
                 cur_loss.backward()
@@ -67,6 +72,8 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
             epoch_avg_loss = epoch_total_loss / len(context_data_loader)
             total_loss += epoch_avg_loss
             avg_loss = total_loss / (epoch_idx + 1)
+
+            return avg_loss
 
     def aggregate(self, state_dicts):
 

@@ -32,13 +32,13 @@ class InputFeaturesPreprocessor(AbstractBasePreprocessor):
         num_features =  2 * (1 if self.scenario == 1 else 4) + len(feature_names) * (2 if self.scenario == 1 else 5) # 1 for AP and 4 for each "STA per AP". Only includes STAs connected to AP_A
 
         features = torch.zeros((num_data, num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         node_codes = ["AP_A", "STA_A1", "STA_A2", "STA_A3", "STA_A4"]
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
             feat_idx = 0
 

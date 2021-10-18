@@ -9,12 +9,12 @@ import os
 
 class AbstractBasePreprocessor(ABC):
 
-    def __init__(self, scenario, preprocessor, batch_size, input_scaler, output_scaler, input_scaler_ins, output_scaler_ins, shuffle, use_cache=True, cache_path="tmp/", **cfg):
+    def __init__(self, scenario, preprocessor, output_size, batch_size, input_scaler, output_scaler, input_scaler_ins, output_scaler_ins, shuffle, use_cache=True, cache_path="tmp/", **cfg):
         self.use_cache = use_cache
         self.cache_path = os.path.join(cache_path, f"features_{preprocessor}_{input_scaler}_{output_scaler}_scenario{scenario}.pkl")
         self.batch_size = batch_size
         self.shuffle = shuffle
-
+        self.output_size = output_size
         self.input_scaler = input_scaler_ins
         self.output_scaler = output_scaler_ins
         self.scenario = scenario

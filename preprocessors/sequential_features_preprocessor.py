@@ -28,7 +28,7 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
         num_data = len(node_data.keys())
 
         features = [{} for _ in range(num_data)]
-        labels = torch.empty((num_data,))
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
@@ -44,6 +44,6 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
                 else:
                     features[idx][fname] = torch.cat([features[idx][fname], new_features], -1)
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         return features, labels

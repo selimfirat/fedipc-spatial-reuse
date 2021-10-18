@@ -29,7 +29,7 @@ class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
         num_features = len(feature_names)
 
         features = torch.empty((num_data, num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
@@ -38,6 +38,6 @@ class MeanFeaturesPreprocessor(AbstractBasePreprocessor):
             for fi in range(len(feature_names)):
                 features[idx, fi] = torch.mean(torch.FloatTensor(threshold_data[feature_names[fi]]))
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         return features, labels

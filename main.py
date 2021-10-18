@@ -19,15 +19,14 @@ def main():
     train_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
 
     # Preprocess data
+    cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
     input_scaler = Mapper.get_scaler(cfg["input_scaler"])(**cfg)
     output_scaler = Mapper.get_scaler(cfg["output_scaler"])(**cfg)
     preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(input_scaler_ins=input_scaler, output_scaler_ins=output_scaler, **cfg)
     train_loader, test_loader, cfg["input_size"], input_scaler, output_scaler = preprocessor.fit_transform(train_loader, test_loader)
 
-    cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
-
     # Train models
-    trainer = Mapper.get_federated_trainer(cfg["federated_trainer"])(**cfg)
+    trainer = Mapper.get_federated_trainer(cfg["federated_trainer"])(logger, **cfg)
     trainer.train(train_loader)
 
     # Evaluate

@@ -125,7 +125,7 @@ class DataDownloader:
     def _load_nodes(self):
         inputs = self._load_inputs()
 
-        f = open(self.outputs_path, "r", encoding="utf-8")
+        f = open(self.outputs_path, "r", encoding="utf-8", errors="ignore")
 
         nodes = {}
 
@@ -166,7 +166,8 @@ class DataDownloader:
 
         for sim in nodes.keys():
             for threshold in nodes[sim].keys():
-                y_true_dict[sim][threshold] = nodes[sim][threshold]["throughput"][0]
+                y_true_dict[sim][threshold] = nodes[sim][threshold]["throughput"]
+                print(nodes[sim][threshold]["throughput"])
 
         return y_true_dict
 

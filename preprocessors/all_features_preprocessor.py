@@ -32,13 +32,13 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
             2 if self.scenario == 1 else 5)  # 1 for AP and 4 for each "STA per AP". Only includes STAs connected to AP_A
 
         features = torch.zeros((num_data, num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         node_codes = ["AP_A", "STA_A1", "STA_A2", "STA_A3", "STA_A4"]
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
             feat_idx = 0
 
@@ -81,7 +81,7 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
         num_features = len(feature_names)
 
         features = torch.empty((num_data, 6 * num_features), dtype=torch.float32)
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
 
@@ -96,7 +96,7 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
                 features[idx, 6*fi + 4] = ((feats - feats.mean()) ** 2).sum().sqrt() / feats.shape[0]
                 features[idx, 6*fi + 5] = feats.shape[0]
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         input_features, _ = self._process_node_input_features(node_data, node_labels)
         padded_features, _ = self._process_node_input_features(node_data, node_labels)
@@ -108,12 +108,12 @@ class AllFeaturesPreprocessor(AbstractBasePreprocessor):
     def _process_node_padded_features(self, node_data, node_labels, max_lens):
 
         num_data = len(node_data.keys())
-        labels = torch.empty((num_data,), dtype=torch.float32)
+        labels = torch.zeros((num_data, self.output_size), dtype=torch.float32)
 
         for idx, (threshold, threshold_data) in enumerate(node_data.items()):
             threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
 
-            labels[idx] = node_labels[threshold]
+            labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         feature_names = ["threshold", "interference", "rssi", "sinr"]
         all_features = []
