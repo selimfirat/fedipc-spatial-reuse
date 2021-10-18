@@ -1,4 +1,4 @@
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import torch
 
 
@@ -7,7 +7,7 @@ class Evaluator:
 
     def __init__(self, metrics=None):
         if metrics is None:
-            metrics = ["mse", "r2"]
+            metrics = ["mse", "r2", "mae"]
         self.metrics = metrics
 
     def calculate(self, y_true_dict, y_pred_dict):
@@ -25,6 +25,10 @@ class Evaluator:
     def mse(self, y_true, y_pred):
 
         return mean_squared_error(y_true, y_pred)
+
+    def mae(self, y_true, y_pred):
+
+        return mean_absolute_error(y_true, y_pred)
 
     def r2(self, y_true, y_pred):
 

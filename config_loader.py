@@ -13,9 +13,9 @@ class ConfigLoader:
         parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
         parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
         parser.add_argument("--preprocessor", default="all_features", type=str, help="Preprocessor applied to the raw data")
-        parser.add_argument("--input_scaler", default="standard", type=str, help="Normalizer applied to the preprocessed data")
-        parser.add_argument("--output_scaler", default="standard", type=str, help="Normalizer applied to the labels")
-        parser.add_argument("--metrics", type=str, nargs='+', default=["mse", "r2"], help="List of metrics to be calculated")
+        parser.add_argument("--input_scaler", default="none", type=str, help="Normalizer applied to the preprocessed data")
+        parser.add_argument("--output_scaler", default="knownmax", type=str, help="Normalizer applied to the labels")
+        parser.add_argument("--metrics", type=str, nargs='+', default=["mse", "r2", "mae"], help="List of metrics to be calculated")
         parser.add_argument("--device", type=str, default="cpu")
 
         # Federated Trainer Params
@@ -41,6 +41,15 @@ class ConfigLoader:
         parser.add_argument("--mlp_hidden_sizes", type=list, default=[50, 25])
         parser.add_argument("--mlp_activation", type=str, default="relu")
 
-        cfg = vars(parser.parse_args())
+        self.cfg = vars(parser.parse_args())
 
-        return cfg
+        return self.cfg
+
+    def override(self, override_cfg):
+        if override_cfg is None:
+            return self.cfg
+
+        for k, v in override_cfg.items():
+            self.cfg[k] = v
+
+        return self.cfg

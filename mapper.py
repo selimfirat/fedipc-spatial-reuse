@@ -70,9 +70,11 @@ class Mapper:
         from preprocessors.scalers.standard_scaler import StandardScaler
         from preprocessors.scalers.dummy_scaler import DummyScaler
         from preprocessors.scalers.minmax_scaler import MinMaxScaler
+        from preprocessors.scalers.knownmax_scaler import KnownMaxScaler
 
         return {
             "none": DummyScaler,
             "standard": StandardScaler,
-            "minmax": MinMaxScaler
+            "minmax": MinMaxScaler,
+            "knownmax": KnownMaxScaler,
         }[input_normalizer]

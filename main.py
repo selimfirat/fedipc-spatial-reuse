@@ -5,13 +5,13 @@ from mapper import Mapper
 from utils import seed_everything
 
 
-def main():
+def main(override_cfg = None):
     # Set seed
     seed_everything(1)
 
     # Get arguments
     cfg_loader = ConfigLoader()
-    cfg = cfg_loader.load_by_cli()
+    cfg = ConfigLoader().load_by_cli().override(override_cfg)
 
     logger = Logger(**cfg)
 
@@ -47,6 +47,8 @@ def main():
     logger.log_metrics({ f"test_{k}": v for k,v in eval_test.items() })
 
     logger.close()
+
+    return eval_train, eval_test
 
 
 if __name__ == "__main__":
