@@ -11,7 +11,8 @@ def main(override_cfg = None):
 
     # Get arguments
     cfg_loader = ConfigLoader()
-    cfg = ConfigLoader().load_by_cli().override(override_cfg)
+    cfg = cfg_loader.load_by_cli()
+    cfg = cfg_loader.override(override_cfg)
 
     logger = Logger(**cfg)
 
