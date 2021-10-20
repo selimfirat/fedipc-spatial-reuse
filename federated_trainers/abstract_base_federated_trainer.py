@@ -4,11 +4,12 @@ from mapper import Mapper
 
 class AbstractBaseFederatedTrainer(ABC):
 
-    def __init__(self, logger, nn_model, loss, **cfg):
+    def __init__(self, evaluator, logger, nn_model, loss, **cfg):
         self.model = Mapper.get_nn_model(nn_model)(**cfg)
 
         self.loss_name = loss
         self.logger = logger
+        self.evaluator = evaluator
 
     def loss(self, y_pred, y, current_state_dict, original_state_dict):
         loss_ins = Mapper.get_loss(self.loss_name)()

@@ -10,11 +10,14 @@ import zipfile
 
 class SRDataset(Dataset):
 
-    def __init__(self, data_downloader, is_train):
-        self.is_train = is_train
-        self.nodes_data, self.y_true_dict, train_contexts, test_contexts = data_downloader.get_data()
+    def __init__(self, data_downloader, split):
+        self.nodes_data, self.y_true_dict, train_contexts, val_contexts, test_contexts = data_downloader.get_data()
 
-        self.contexts = train_contexts if self.is_train else test_contexts
+        self.contexts = {
+            "train": train_contexts,
+            "val": val_contexts,
+            "test": test_contexts
+        }[split]
 
     def __len__(self):
 
@@ -79,7 +82,7 @@ class DataDownloader:
 
         self.download_data_if_not_exist()
 
-        self.nodes, self.y_true_dict, self.train_contexts, self.test_contexts = self._load_nodes_cached() if self.use_cache else self._load_nodes()
+        self.nodes, self.y_true_dict, self.train_contexts, self.val_contexts, self.test_contexts = self._load_nodes_cached() if self.use_cache else self._load_nodes()
 
     def download_data_if_not_exist(self):
         if not os.path.exists(self.outputs_path):
@@ -105,7 +108,7 @@ class DataDownloader:
 
     def get_data(self):
 
-        return self.nodes, self.y_true_dict, self.train_contexts, self.test_contexts
+        return self.nodes, self.y_true_dict, self.train_contexts, self.val_contexts, self.test_contexts
 
     def _load_nodes_cached(self):
         # Check for cache
@@ -114,13 +117,13 @@ class DataDownloader:
                 return pickle.load(f)
 
         # Load input files
-        nodes, y_true_dict, train_contexts, test_contexts = self._load_nodes()
+        res = self._load_nodes()
 
         # Cache contexts
         with open(self.cache_path, 'wb') as f:
-            pickle.dump((nodes, y_true_dict, train_contexts, test_contexts), f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(res, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        return nodes, y_true_dict, train_contexts, test_contexts
+        return res
 
     def _load_nodes(self):
         inputs = self._load_inputs()
@@ -156,9 +159,10 @@ class DataDownloader:
 
         y_true_dict = self._calculate_y_true_dict(nodes)
 
-        train_contexts, test_contexts = train_test_split(list(y_true_dict.keys()), test_size=0.2, random_state=1, shuffle=True)
+        train_contexts, test_contexts = train_test_split(list(y_true_dict.keys()), test_size=0.30, random_state=1, shuffle=True)
+        val_contexts, test_contexts = train_test_split(test_contexts, test_size=0.50, random_state=1, shuffle=True)
 
-        return nodes, y_true_dict, train_contexts, test_contexts
+        return nodes, y_true_dict, train_contexts, val_contexts, test_contexts
 
     def _calculate_y_true_dict(self, nodes):
 
@@ -167,7 +171,6 @@ class DataDownloader:
         for sim in nodes.keys():
             for threshold in nodes[sim].keys():
                 y_true_dict[sim][threshold] = nodes[sim][threshold]["throughput"]
-                print(nodes[sim][threshold]["throughput"])
 
         return y_true_dict
 

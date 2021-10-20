@@ -5,8 +5,8 @@ from federated_trainers.fed_avg_trainer import FedAvgTrainer
 
 class FedProxTrainer(FedAvgTrainer):
 
-    def __init__(self, **cfg):
-        super(FedProxTrainer, self).__init__(**cfg)
+    def __init__(self, evaluator, logger, **cfg):
+        super(FedProxTrainer, self).__init__(evaluator, logger, **cfg)
 
     def proximal_term(self, current_state_dict, original_state_dict):
         diff_sum = 0.0

@@ -1,23 +1,28 @@
-def objective(trial):
-    from utils import seed_everything
-    seed_everything(1)
+def objective(trial, device="cuda:0"):
 
-    from main import main
-    import torch
+    def _objective(trial):
+        from utils import seed_everything
+        seed_everything(1)
 
-    params = {
-        "lr": trial.suggest_float("lr", 1e-5, 1.0, log=True),
-        "loss": trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse"]),
-        "num_rounds": 500,
-        "device": "cuda:0"
-    }
+        from main import main
+        import torch
 
-    _, eval_test = main(params)
-    torch.cuda.empty_cache()
+        params = {
+            "lr": trial.suggest_float("lr", 1e-5, 1.0, log=True),
+            "loss": trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse"]),
+            "num_rounds": 500,
+            "device": device,
+            "mlflow_server": "http://bubota.ee.ic.ac.uk:5000/"
+        }
 
-    print(params)
+        _, eval_val, _ = main(params)
+        torch.cuda.empty_cache()
 
-    return eval_test["mae"]
+        print(params)
+
+        return eval_val["mae"]
+
+    return _objective(trial)
 
 
 if __name__ == '__main__':

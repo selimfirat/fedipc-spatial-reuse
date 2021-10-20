@@ -3,20 +3,32 @@ import torch
 from torch.optim import SGD
 from tqdm import tqdm
 from copy import deepcopy
+
+from evaluator import Evaluator
 from federated_trainers.abstract_base_federated_trainer import AbstractBaseFederatedTrainer
 from utils import to_device
 
 
 class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
-    def __init__(self, logger, **cfg):
-        super(FedAvgTrainer, self).__init__(logger, **cfg)
+    def __init__(self, evaluator, logger, **cfg):
+        super(FedAvgTrainer, self).__init__(evaluator, logger, **cfg)
 
         self.cfg = cfg
 
-    def train(self, train_loader):
+        self.patience_left = self.cfg["early_stopping_patience"]
 
-        for round_idx in tqdm(range(self.cfg["num_rounds"])):
+        self.best_mae = float("inf")
+
+        self.best_model = None
+
+    def train(self, train_loader, val_loader):
+
+        for round_idx in tqdm(range(1, self.cfg["max_num_rounds"] + 1)):
+            if self.patience_left <= 0:
+                self.logger.log_metric("stopped_at_round", round_idx)
+                break
+
             m = max(int(np.round(self.cfg["participation"]*len(train_loader))), 1)
             chosen_contexts = np.random.choice(list(range(len(train_loader))), m, replace=False)
 
@@ -41,6 +53,18 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
             self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts))
 
             self.aggregate(state_dicts)
+
+            if round_idx % self.cfg["early_stopping_check_rounds"]:
+                cur_mae = self.evaluator.calculate(self, val_loader)["mae"]
+
+                self.patience_left = self.cfg["early_stopping_patience"] - 1
+
+                if cur_mae < self.best_mae:
+                    self.patience_left = self.cfg["early_stopping_patience"]
+                    self.best_mae = cur_mae
+                    self.best_model = deepcopy(self.model)
+
+        self.model = self.best_model
 
     def train_node(self, model, optimizer, context_data_loader, original_state_dict):
         model.train()
@@ -71,9 +95,10 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
             epoch_avg_loss = epoch_total_loss / len(context_data_loader)
             total_loss += epoch_avg_loss
+
             avg_loss = total_loss / (epoch_idx + 1)
 
-            return avg_loss
+        return total_loss / self.cfg["num_epochs"]
 
     def aggregate(self, state_dicts):
 

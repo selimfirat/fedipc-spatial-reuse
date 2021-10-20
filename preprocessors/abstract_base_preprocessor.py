@@ -27,7 +27,7 @@ class AbstractBasePreprocessor(ABC):
     def transform(self, loader):
         pass
 
-    def fit_transform(self, train_loader, test_loader):
+    def fit_transform(self, train_loader, val_loader, test_loader):
         if self.use_cache and os.path.exists(self.cache_path):
             with open(self.cache_path, 'rb') as f:
                 return pickle.load(f)
@@ -43,6 +43,12 @@ class AbstractBasePreprocessor(ABC):
 
         new_train_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
+        context_indices, features, labels = self.transform(val_loader)
+        features = self.input_scaler.transform(features)
+        labels = self.output_scaler.transform(labels)
+
+        new_val_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
+
         context_indices, features, labels = self.transform(test_loader)
         features = self.input_scaler.transform(features)
         labels = self.output_scaler.transform(labels)
@@ -53,8 +59,10 @@ class AbstractBasePreprocessor(ABC):
         if input_size == "UNKNOWN" and type(features[0][0]) is dict:
             input_size = f"UNKNOWN_DICT_{len(features[0][0].keys())}"
 
+        res = new_train_loader, new_val_loader, new_test_loader, input_size, self.input_scaler, self.output_scaler
+
         if self.use_cache:
             with open(self.cache_path, 'wb') as f:
-                pickle.dump((new_train_loader, new_test_loader, input_size, self.input_scaler, self.output_scaler), f, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(res, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        return new_train_loader, new_test_loader, input_size, self.input_scaler, self.output_scaler
+        return res

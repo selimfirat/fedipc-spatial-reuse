@@ -18,39 +18,36 @@ def main(override_cfg = None):
     logger = Logger(**cfg)
 
     # Download/Load Data
-    train_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
+    train_loader, val_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
 
     # Preprocess data
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
     input_scaler = Mapper.get_scaler(cfg["input_scaler"])(**cfg)
     output_scaler = Mapper.get_scaler(cfg["output_scaler"])(**cfg)
     preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(input_scaler_ins=input_scaler, output_scaler_ins=output_scaler, **cfg)
-    train_loader, test_loader, cfg["input_size"], input_scaler, output_scaler = preprocessor.fit_transform(train_loader, test_loader)
+    train_loader, val_loader, test_loader, cfg["input_size"], input_scaler, output_scaler = preprocessor.fit_transform(train_loader, val_loader, test_loader)
 
     # Train models
-    trainer = Mapper.get_federated_trainer(cfg["federated_trainer"])(logger, **cfg)
-    trainer.train(train_loader)
+    evaluator = Evaluator(output_scaler, cfg["metrics"])
+    trainer = Mapper.get_federated_trainer(cfg["federated_trainer"])(evaluator, logger, **cfg)
+    trainer.train(train_loader, val_loader)
 
     # Evaluate
-    evaluator = Evaluator(cfg["metrics"])
+    eval_train = evaluator.calculate(trainer, train_loader)
+    eval_val = evaluator.calculate(trainer, val_loader)
+    eval_test = evaluator.calculate(trainer, test_loader)
 
-    y_true, y_pred = trainer.predict(train_loader)
-    y_pred = output_scaler.revert(y_pred)
-    y_true = output_scaler.revert(y_true)
-    eval_train = evaluator.calculate(y_true, y_pred)
     print("Eval Train", eval_train)
-    logger.log_metrics({ f"train_{k}": v for k,v in eval_train.items() })
-
-    y_true, y_pred = trainer.predict(test_loader)
-    y_pred = output_scaler.revert(y_pred)
-    y_true = output_scaler.revert(y_true)
-    eval_test = evaluator.calculate(y_true, y_pred)
+    print("Eval Val", eval_val)
     print("Eval Test", eval_test)
+
+    logger.log_metrics({ f"train_{k}": v for k,v in eval_train.items() })
+    logger.log_metrics({ f"val_{k}": v for k,v in eval_val.items() })
     logger.log_metrics({ f"test_{k}": v for k,v in eval_test.items() })
 
     logger.close()
 
-    return eval_train, eval_test
+    return eval_train, eval_val, eval_test
 
 
 if __name__ == "__main__":

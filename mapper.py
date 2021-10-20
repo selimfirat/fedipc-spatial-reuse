@@ -57,13 +57,15 @@ class Mapper:
 
         data_downloader = DataDownloader(scenario)
 
-        train_data = SRDataset(data_downloader, is_train=True)
-        test_data = SRDataset(data_downloader, is_train=False)
+        train_data = SRDataset(data_downloader, split="train")
+        val_data = SRDataset(data_downloader, split="val")
+        test_data = SRDataset(data_downloader, split="test")
 
         train_loader = DataLoader(train_data)
+        val_loader = DataLoader(val_data)
         test_loader = DataLoader(test_data)
 
-        return train_loader, test_loader
+        return train_loader, val_loader, test_loader
 
     @staticmethod
     def get_scaler(input_normalizer):

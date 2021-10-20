@@ -23,7 +23,9 @@ class ConfigLoader:
         parser.add_argument("--batch_size", type=int, default=21)
         parser.add_argument("--shuffle", type=bool, default=True)
         parser.add_argument("--num_epochs", type=int, default=1)
-        parser.add_argument("--num_rounds", type=int, default=100)
+        parser.add_argument("--max_num_rounds", type=int, default=1000)
+        parser.add_argument("--early_stopping_patience", type=int, default=5)
+        parser.add_argument("--early_stopping_check_rounds", type=int, default=20)
         parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
 
         # Local SGD Parameters
