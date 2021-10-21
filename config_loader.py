@@ -40,8 +40,11 @@ class ConfigLoader:
 
         ## NN Model Parameters
         # MLP Parameters
-        parser.add_argument("--mlp_hidden_sizes", type=list, default=[50, 25])
+        parser.add_argument("--mlp_hidden_sizes", type=list, default=[1])
         parser.add_argument("--mlp_activation", type=str, default="relu")
+
+        # Dummy optuna params
+        parser.add_argument("--parallel", type=int, default=1)
 
         self.cfg = vars(parser.parse_args())
 

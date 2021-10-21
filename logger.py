@@ -15,9 +15,9 @@ class Logger:
             for param, val in params.items():
                 self.log_param(param, val)
 
-    def log_metric(self, name, val):
+    def log_metric(self, name, val, step=0):
         if self.log:
-            mlflow.log_metric(name, val)
+            mlflow.log_metric(name, val, step)
 
     def log_metrics(self, metrics_dict):
         if self.log:

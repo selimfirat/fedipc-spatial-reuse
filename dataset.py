@@ -159,7 +159,7 @@ class DataDownloader:
 
         y_true_dict = self._calculate_y_true_dict(nodes)
 
-        train_contexts, test_contexts = train_test_split(list(y_true_dict.keys()), test_size=0.30, random_state=1, shuffle=True)
+        train_contexts, test_contexts = train_test_split(list(y_true_dict.keys()), test_size=0.20, random_state=1, shuffle=True)
         val_contexts, test_contexts = train_test_split(test_contexts, test_size=0.50, random_state=1, shuffle=True)
 
         return nodes, y_true_dict, train_contexts, val_contexts, test_contexts

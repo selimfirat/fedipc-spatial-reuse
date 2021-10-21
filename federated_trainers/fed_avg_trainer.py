@@ -25,9 +25,6 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
     def train(self, train_loader, val_loader):
 
         for round_idx in tqdm(range(1, self.cfg["max_num_rounds"] + 1)):
-            if self.patience_left <= 0:
-                self.logger.log_metric("stopped_at_round", round_idx)
-                break
 
             m = max(int(np.round(self.cfg["participation"]*len(train_loader))), 1)
             chosen_contexts = np.random.choice(list(range(len(train_loader))), m, replace=False)
@@ -50,19 +47,28 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
                 state_dicts[context_key] = deepcopy(self.model.state_dict())
 
-            self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts))
+            self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts), round_idx)
 
             self.aggregate(state_dicts)
 
-            if round_idx % self.cfg["early_stopping_check_rounds"]:
-                cur_mae = self.evaluator.calculate(self, val_loader)["mae"]
+            if (round_idx % self.cfg["early_stopping_check_rounds"]) == 0:
+                eval_val = self.evaluator.calculate(self, val_loader)
+                cur_mae = eval_val["mae"]
+                self.logger.log_metric("val_mae_es", cur_mae, round_idx)
 
-                self.patience_left = self.cfg["early_stopping_patience"] - 1
-
-                if cur_mae < self.best_mae:
+                if cur_mae < self.best_mae and eval_val["r2"] > 0:
                     self.patience_left = self.cfg["early_stopping_patience"]
                     self.best_mae = cur_mae
                     self.best_model = deepcopy(self.model)
+                else:
+                    self.patience_left -= - 1
+
+                if self.patience_left <= 0:
+                    self.logger.log_metric("stopped_at_round", round_idx)
+                    break
+        else:
+            self.best_model = self.model
+            self.logger.log_metric("stopped_at_round", self.cfg["max_num_rounds"])
 
         self.model = self.best_model
 
