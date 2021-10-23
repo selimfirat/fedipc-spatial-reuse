@@ -30,10 +30,11 @@ class Mapper:
     def get_nn_model(nn_model):
         from nn_models.mlp import MLP
         from nn_models.separate_recurrents import SeparateRecurrentsModel
-
+        from nn_models.transformer import Transformer
         return {
             "mlp": MLP,
             "separate_recurrents": SeparateRecurrentsModel,
+            "transformer":  Transformer
         }[nn_model]
 
     @staticmethod
