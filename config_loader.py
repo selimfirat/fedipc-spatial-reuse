@@ -11,7 +11,7 @@ class ConfigLoader:
 
         parser.add_argument("--scenario", default=1, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
         parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
-        parser.add_argument("--nn_model", default="transformer", type=str, help="NN Model")
+        parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
         parser.add_argument("--preprocessor", default="padded_features", type=str, help="Preprocessor applied to the raw data")
         parser.add_argument("--input_scaler", default="standard", type=str, help="Normalizer applied to the preprocessed data")
         parser.add_argument("--output_scaler", default="minmax", type=str, help="Normalizer applied to the labels")
