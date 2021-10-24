@@ -16,7 +16,9 @@ def objective(device="cuda:0"):
             "loss": trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse"]),
             "num_rounds": 500,
             "device": device,
-            "mlflow_server": "http://bubota.ee.ic.ac.uk:5000/"
+            "mlflow_server": "http://bubota.ee.ic.ac.uk:5000/",
+            "input_scaler": "minmax",
+            "output_scaler": "minmax"
         }
 
         _, eval_val, eval_test = main(params)

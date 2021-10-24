@@ -27,6 +27,15 @@ class AbstractBasePreprocessor(ABC):
     def transform(self, loader):
         pass
 
+    def _calculate_label_lengths(self, loader):
+        res = []
+
+        for context_idx, features, labels in loader:
+            r = [len(lbl) for lbl in labels.values()]
+            res.append(r)
+
+        return res
+
     def fit_transform(self, train_loader, val_loader, test_loader):
         if self.use_cache and os.path.exists(self.cache_path):
             with open(self.cache_path, 'rb') as f:
@@ -34,6 +43,7 @@ class AbstractBasePreprocessor(ABC):
 
         self.fit(train_loader)
 
+        label_lengths = self._calculate_label_lengths(train_loader)
         context_indices, features, labels = self.transform(train_loader)
         self.input_scaler.fit(features)
         features = self.input_scaler.transform(features)
@@ -41,19 +51,21 @@ class AbstractBasePreprocessor(ABC):
         self.output_scaler.fit(labels)
         labels = self.output_scaler.transform(labels)
 
-        new_train_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
+        new_train_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
+        label_lengths = self._calculate_label_lengths(val_loader)
         context_indices, features, labels = self.transform(val_loader)
         features = self.input_scaler.transform(features)
         labels = self.output_scaler.transform(labels)
 
-        new_val_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
+        new_val_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
+        label_lengths = self._calculate_label_lengths(test_loader)
         context_indices, features, labels = self.transform(test_loader)
         features = self.input_scaler.transform(features)
         labels = self.output_scaler.transform(labels)
 
-        new_test_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
+        new_test_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
         input_size = features[0].shape[1] if type(features[0]) is torch.Tensor and np.all(np.array([feat.shape[-1] for feat in features]) == features[0].shape[-1]) else "UNKNOWN"
         if input_size == "UNKNOWN" and type(features[0][0]) is dict:

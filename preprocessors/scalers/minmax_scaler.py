@@ -13,6 +13,7 @@ class MinMaxScaler:
         self.max = rt.amax(dim=[0, 1])
 
         self.diff = self.max - self.min
+
         return self
 
     def transform(self, X):

@@ -13,7 +13,7 @@ class ConfigLoader:
         parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
         parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
         parser.add_argument("--preprocessor", default="padded_features", type=str, help="Preprocessor applied to the raw data")
-        parser.add_argument("--input_scaler", default="standard", type=str, help="Normalizer applied to the preprocessed data")
+        parser.add_argument("--input_scaler", default="minmax", type=str, help="Normalizer applied to the preprocessed data")
         parser.add_argument("--output_scaler", default="minmax", type=str, help="Normalizer applied to the labels")
         parser.add_argument("--metrics", type=str, nargs='+', default=["mse", "r2", "mae"], help="List of metrics to be calculated")
         parser.add_argument("--device", type=str, default="cpu")
@@ -26,10 +26,10 @@ class ConfigLoader:
         parser.add_argument("--max_num_rounds", type=int, default=1000)
         parser.add_argument("--early_stopping_patience", type=int, default=5)
         parser.add_argument("--early_stopping_check_rounds", type=int, default=20)
-        parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
+        parser.add_argument("--loss", type=str, default="l1",  help="mse, l1, smooth_l1")
 
         # Local SGD Parameters
-        parser.add_argument("--lr", type=float, default=1e-3)
+        parser.add_argument("--lr", type=float, default=1e-1)
         parser.add_argument("--momentum", type=float, default=0.0)
         parser.add_argument("--nesterov", type=float, default=False)
         parser.add_argument("--weight_decay", type=float, default=0.0)
@@ -40,7 +40,7 @@ class ConfigLoader:
 
         ## NN Model Parameters
         # MLP Parameters
-        parser.add_argument("--mlp_hidden_sizes", type=list, default=[1])
+        parser.add_argument("--mlp_hidden_sizes", type=list, default=[64, 128, 64])
         parser.add_argument("--mlp_activation", type=str, default="relu")
         ## Transformer
         parser.add_argument("--nhead", type=int, default=2)

@@ -22,9 +22,6 @@ class MLP(nn.Module):
         }[mlp_activation]()
 
     def forward(self, x):
-        #if torch.any(x.isnan()):
-        #    print(x)
-
         h = x
 
         for i, fc in enumerate(self.fcs, 1):
@@ -32,8 +29,5 @@ class MLP(nn.Module):
 
             if i < len(self.fcs):
                 h = self.activation(h)
-
-        #if torch.any(h.isnan()):
-        #    print(h)
 
         return h

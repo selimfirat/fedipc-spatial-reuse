@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
-inputs_paths = ["data/simulator_input_files_sce1", "data/simulator_input_files_sce2"]
+inputs_paths = ["data/simulator_input_files_sce1", "data/simulator_input_files_sce2", "data/simulator_input_files_sce3"]
 
 
 res = set()

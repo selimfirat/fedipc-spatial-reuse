@@ -17,8 +17,8 @@ class Evaluator:
         y_true = self.output_scaler.revert(y_true)
 
         def _calculate(y_true_dict, y_pred_dict):
-            y_true = torch.cat([y_true_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy()
-            y_pred = torch.cat([y_pred_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy()
+            y_true = torch.cat([y_true_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy().flatten()
+            y_pred = torch.cat([y_pred_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy().flatten()
 
             results = {}
 

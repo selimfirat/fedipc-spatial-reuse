@@ -1,7 +1,3 @@
-from preprocessors.all_features_preprocessor import AllFeaturesPreprocessor
-from preprocessors.padded_features_preprocessor import PaddedFeaturesPreprocessor
-
-
 class Mapper:
 
     @staticmethod
@@ -19,11 +15,13 @@ class Mapper:
     @staticmethod
     def get_loss(loss):
         from torch import nn
+        import torch
 
         return {
-            "mse": nn.MSELoss,
-            "l1": nn.L1Loss,
-            "smooth_l1": nn.SmoothL1Loss
+            "mse": nn.MSELoss(),
+            "l1": nn.L1Loss(),
+            "smooth_l1": nn.SmoothL1Loss(),
+            "rmse": lambda x, y: torch.sqrt((x-y)**2 + 1e-6)
         }[loss]
 
     @staticmethod
@@ -39,6 +37,8 @@ class Mapper:
 
     @staticmethod
     def get_preprocessor(preprocessor):
+        from preprocessors.all_features_preprocessor import AllFeaturesPreprocessor
+        from preprocessors.padded_features_preprocessor import PaddedFeaturesPreprocessor
         from preprocessors.mean_features_preprocessor import MeanFeaturesPreprocessor
         from preprocessors.sequential_features_preprocessor import SequentialFeaturesPreprocessor
         from preprocessors.input_features_preprocessor import InputFeaturesPreprocessor

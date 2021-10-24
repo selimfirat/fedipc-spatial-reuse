@@ -82,14 +82,15 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
             epoch_total_loss = .0
 
             # The data are shuffled in preprocessor so no need to shuffle again.
-            for X, y in context_data_loader:
+            for X, y, y_len in context_data_loader:
+                y_len = y_len[0]
                 model.zero_grad()
                 optimizer.zero_grad()
 
                 X = to_device(X, self.cfg["device"])
-                y_pred = model.forward(X)
+                y_pred = model.forward(X)[:, :y_len]
 
-                y = to_device(y, self.cfg["device"])
+                y = to_device(y[:, :y_len], self.cfg["device"])
 
                 cur_loss = self.loss(y_pred, y, self.model.state_dict(), original_state_dict)
 
@@ -123,12 +124,15 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
         y_true = {}
         for context_idx, context_loader in data_loader:
 
-            for X, y in context_loader:
+            for X, y, y_len in context_loader:
+                y_len = y_len[0]
 
-                preds = self.model.forward(X).detach()
+                preds = self.model.forward(X).detach()[:, :y_len].flatten()
+                y = y[:, :y_len].flatten()
 
-                y_pred[context_idx] = torch.cat([y_pred[context_idx], preds], dim=0) if context_idx in y_pred else preds
 
-                y_true[context_idx] = torch.cat([y_true[context_idx], y], dim=0) if context_idx in y_true else y
+                y_pred[context_idx] = torch.cat([y_pred[context_idx][:, :y_len], preds], dim=0) if context_idx in y_pred else preds
+
+                y_true[context_idx] = torch.cat([y_true[context_idx][:, :y_len], y], dim=0) if context_idx in y_true else y
 
         return y_true, y_pred

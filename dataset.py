@@ -34,11 +34,11 @@ class SRDataset(Dataset):
 
 class SRProcessedDataset(Dataset):
 
-    def __init__(self, context_indices, features, labels, node_batch_size, node_shuffle):
+    def __init__(self, context_indices, features, labels, label_lengths, node_batch_size, node_shuffle):
         self.context_data_loaders = []
 
-        for context_features, context_labels in zip(features, labels):
-            cds = DataLoader(ContextDataset(context_features, context_labels), shuffle=node_shuffle, batch_size=node_batch_size)
+        for context_features, context_labels, context_label_lengths in zip(features, labels, label_lengths):
+            cds = DataLoader(ContextDataset(context_features, context_labels, context_label_lengths), shuffle=node_shuffle, batch_size=node_batch_size)
             self.context_data_loaders.append(cds)
 
         self.context_indices = context_indices
@@ -54,13 +54,14 @@ class SRProcessedDataset(Dataset):
 
 class ContextDataset(Dataset):
 
-    def __init__(self, features, labels):
+    def __init__(self, features, labels, label_lengths):
         self.features = features
         self.labels = labels
+        self.label_lengths = label_lengths
 
     def __getitem__(self, idx):
 
-        return self.features[idx], self.labels[idx]
+        return self.features[idx], self.labels[idx], self.label_lengths[idx]
 
     def __len__(self):
 

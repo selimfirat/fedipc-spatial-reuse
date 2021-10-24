@@ -12,7 +12,7 @@ class AbstractBaseFederatedTrainer(ABC):
         self.evaluator = evaluator
 
     def loss(self, y_pred, y, current_state_dict, original_state_dict):
-        loss_ins = Mapper.get_loss(self.loss_name)()
+        loss_ins = Mapper.get_loss(self.loss_name)
 
         return loss_ins(y_pred, y)
 
