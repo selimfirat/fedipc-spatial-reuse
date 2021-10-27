@@ -17,6 +17,26 @@ class AbstractBasePreprocessor(ABC):
         self.output_size = output_size
         self.output_scaler = output_scaler_ins
         self.scenario = scenario
+        self.input_scaler = input_scaler
+
+        self.stats = {
+            1: {'throughput': {'min': 0.03, 'max': 110.41, 'mean': 57.818561309523815, 'std': 29.608858485445268}, 'interference': {'min': -151.73, 'max': -0.0, 'mean': -97.49411523611523, 'std': 21.936604553912254}, 'rssi': {'min': -81.41, 'max': -37.42, 'mean': -58.52763214285714, 'std': 7.11873413950484}, 'sinr': {'min': -9.4, 'max': 53.64, 'mean': 32.949347619047614, 'std': 8.618997584824925}, 'threshold': {'min': -82.0, 'max': -62.0, 'mean': -72.0, 'std': 6.05548095703125}},
+            2: {'throughput': {'min': 0.0, 'max': 57.88, 'mean': 16.012168194980696, 'std': 11.065256101784948}, 'interference': {'min': -150.16, 'max': -0.0, 'mean': -88.64759573476049, 'std': 26.154485706129986}, 'rssi': {'min': -81.41, 'max': -0.0, 'mean': -58.22506696428571, 'std': 6.869791482037659}, 'sinr': {'min': -20.52, 'max': 55.3, 'mean': 30.648423423423424, 'std': 11.37196171194207}, 'threshold': {'min': -82.0, 'max': -62.0, 'mean': -72.0, 'std': 6.05548095703125}},
+            3: {'throughput': {'min': 0.0, 'max': 59.59, 'mean': 16.07963606654783, 'std': 11.011395347524639}, 'interference': {'min': -152.24, 'max': -0.0, 'mean': -88.66472291466923, 'std': 26.151377927825887}, 'rssi': {'min': -81.43, 'max': -36.43, 'mean': -58.24301247771835, 'std': 6.8552820047072025}, 'sinr': {'min': -28.39, 'max': 56.5, 'mean': 30.92333821407351, 'std': 10.94405564797456}, 'threshold': {'min': -82.0, 'max': -62.0, 'mean': -72.0, 'std': 6.0554914474487305}}
+        }[scenario] # Obtained via scripts.find_minmax module from the training set.
+
+    def scale(self, feature_name, val):
+        if self.input_scaler == "minmax":
+            minval = self.stats[feature_name]["min"]
+            maxval = self.stats[feature_name]["max"]
+
+            return (val - minval) / (maxval - minval)
+
+        elif self.input_scaler == "standard":
+            mean = self.stats[feature_name]["mean"]
+            std = self.stats[feature_name]["std"]
+
+            return (val - mean) / std
 
     @abstractmethod
     def fit(self, train_loader):
@@ -35,28 +55,28 @@ class AbstractBasePreprocessor(ABC):
 
         return res
 
-    def fit_transform(self, train_loader, val_loader, test_loader):
+    def fit_transform(self, train_data, val_data, test_data):
         if self.use_cache and os.path.exists(self.cache_path):
             with open(self.cache_path, 'rb') as f:
                 return pickle.load(f)
 
-        self.fit(train_loader)
+        self.fit(train_data)
 
-        label_lengths = self._calculate_label_lengths(train_loader)
-        context_indices, features, labels = self.transform(train_loader)
+        label_lengths = self._calculate_label_lengths(train_data)
+        context_indices, features, labels = self.transform(train_data)
         self.output_scaler.fit(labels)
         labels = self.output_scaler.transform(labels)
 
         new_train_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
-        label_lengths = self._calculate_label_lengths(val_loader)
-        context_indices, features, labels = self.transform(val_loader)
+        label_lengths = self._calculate_label_lengths(val_data)
+        context_indices, features, labels = self.transform(val_data)
         labels = self.output_scaler.transform(labels)
 
         new_val_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
-        label_lengths = self._calculate_label_lengths(test_loader)
-        context_indices, features, labels = self.transform(test_loader)
+        label_lengths = self._calculate_label_lengths(test_data)
+        context_indices, features, labels = self.transform(test_data)
         labels = self.output_scaler.transform(labels)
 
         new_test_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)

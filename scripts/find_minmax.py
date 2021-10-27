@@ -14,14 +14,17 @@ for scenario in [1, 2, 3]:
     train_data = SRDataset(data_downloader, split="train")
     train_loader = DataLoader(train_data)
 
-    feature_names = ["throughput", "interference", "rssi", "sinr"]
+    feature_names = ["throughput", "interference", "rssi", "sinr", "threshold"]
 
     result = {}
     for feature_name in feature_names:
         data = []
         for context_idx, features, labels in train_loader:
             for threshold, th_data in features.items():
-                data.extend(torch.stack(th_data[feature_name]))
+                vals = th_data[feature_name]
+                if feature_name == "threshold":
+                    vals = [torch.Tensor([float(val)]) for val in vals]
+                data.extend(torch.stack(vals))
 
         data = torch.stack(data)
 

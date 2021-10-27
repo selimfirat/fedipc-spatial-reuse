@@ -51,6 +51,7 @@ class PaddedFeaturesPreprocessor(AbstractBasePreprocessor):
 
             for idx, (threshold, threshold_data) in enumerate(node_data.items()):
                 cur_features = torch.FloatTensor(threshold_data[fname])
+                cur_features = self.scale(fname, cur_features)
                 features[idx, :cur_features.shape[0]] = cur_features
 
             all_features.append(features)

@@ -28,11 +28,9 @@ class Mapper:
     @staticmethod
     def get_nn_model(nn_model):
         from nn_models.mlp import MLP
-        from nn_models.separate_recurrents import SeparateRecurrentsModel
         from nn_models.transformer import Transformer
         return {
             "mlp": MLP,
-            "separate_recurrents": SeparateRecurrentsModel,
             "transformer":  Transformer
         }[nn_model]
 
@@ -41,14 +39,12 @@ class Mapper:
         from preprocessors.all_features_preprocessor import AllFeaturesPreprocessor
         from preprocessors.padded_features_preprocessor import PaddedFeaturesPreprocessor
         from preprocessors.mean_features_preprocessor import MeanFeaturesPreprocessor
-        from preprocessors.sequential_features_preprocessor import SequentialFeaturesPreprocessor
         from preprocessors.input_features_preprocessor import InputFeaturesPreprocessor
         from preprocessors.statistical_features_preprocessor import StatisticalFeaturesPreprocessor
 
         return {
             "mean_features": MeanFeaturesPreprocessor,
             "padded_features": PaddedFeaturesPreprocessor,
-            "sequential_features": SequentialFeaturesPreprocessor,
             "input_features": InputFeaturesPreprocessor,
             "all_features": AllFeaturesPreprocessor,
             "statistical_features": StatisticalFeaturesPreprocessor,

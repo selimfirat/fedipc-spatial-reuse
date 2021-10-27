@@ -37,6 +37,8 @@ class StatisticalFeaturesPreprocessor(AbstractBasePreprocessor):
 
             for fi, feat_name in enumerate(feature_names):
                 feats = torch.FloatTensor(threshold_data[feat_name])
+                feats = self.scale(feat_name, feats)
+
                 features[idx, 6*fi + 0] = feats.mean()
                 features[idx, 6*fi + 1] = feats.median()
                 features[idx, 6*fi + 2] = feats.min()
