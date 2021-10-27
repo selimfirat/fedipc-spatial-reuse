@@ -21,7 +21,8 @@ class Mapper:
             "mse": nn.MSELoss(),
             "l1": nn.L1Loss(),
             "smooth_l1": nn.SmoothL1Loss(),
-            "rmse": lambda x, y: torch.sqrt((x-y)**2 + 1e-6)
+            "rmse": lambda x, y: torch.sqrt((x-y)**2 + 1e-6),
+            "l1-mse": lambda pred,y: 0.5 * nn.MSELoss()(pred,y) + 0.5 * nn.L1Loss()(pred,y)
         }[loss]
 
     @staticmethod
