@@ -71,6 +71,7 @@ class ContextDataset(Dataset):
 class DataDownloader:
 
     def __init__(self, scenario=1, use_cache=True):
+        self.scenario = scenario
         self.data_path = "data"
         self.outputs_path = f"{self.data_path}/output_11ax_sr_simulations_sce{scenario}.txt"
         self.inputs_path = f"{self.data_path}/simulator_input_files_sce{scenario}"
@@ -78,8 +79,8 @@ class DataDownloader:
 
         self.cache_path = f"tmp/data_scenario{scenario}.pkl"
 
-        self.inputs_url = f"https://zenodo.org/record/5506248/files/simulator_input_files_sce{scenario}.zip?download=1"
-        self.outputs_url = f"https://zenodo.org/record/5506248/files/output_11ax_sr_simulations_sce{scenario}.txt?download=1"
+        self.inputs_url = f"https://zenodo.org/record/5575120/files/simulator_input_files_sce{scenario}.zip?download=1"
+        self.outputs_url = f"https://zenodo.org/record/5575120/files/output_11ax_sr_simulations_sce{scenario}.txt?download=1"
 
         self.download_data_if_not_exist()
 
@@ -103,6 +104,9 @@ class DataDownloader:
 
             with zipfile.ZipFile(zip_target, "r") as zip_ref:
                 zip_ref.extractall(self.data_path)
+
+            if self.scenario == 3:
+                os.rename("data/input_files_3_light", "data/simulator_input_files_sce3")
 
             os.remove(zip_target)
             print(f"Downloaded {self.inputs_path}!")
@@ -141,11 +145,15 @@ class DataDownloader:
 
             if cur_step[0] == "initial":
                 cur_simulation = {}
-                cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
+                if self.scenario == 3:
+                    cur_simulation["scenario"], cur_simulation["vidx"], cur_simulation["threshold"], _ = re.findall('\d+', line)
+                else:
+                    cur_simulation["scenario"], cur_simulation["threshold"], _ = re.findall('\d+', line)
+
                 cur_simulation["threshold"] = "-" + cur_simulation["threshold"]
             else:
                 nums = re.findall('(-?\d+\.\d+|-nan|-inf|nan|inf)', line)
-                nums = [num.replace("nan", "0").replace("inf", "0") for num in nums]  # TODO: Fix nan issue
+                nums = [num.replace("nan", "0").replace("inf", "0") for num in nums]
                 cur_simulation[cur_step[0]] = list(map(float, nums))
 
             cur_step = cur_step[1:] + cur_step[:1]  # turn step
@@ -154,7 +162,8 @@ class DataDownloader:
                 if not cur_simulation["scenario"] in nodes:
                     nodes[cur_simulation["scenario"]] = {}
 
-                cur_simulation["input_nodes"] = inputs[f"input_nodes_s{cur_simulation['scenario']}_c{cur_simulation['threshold']}.csv"] # TODO: include
+                csv_name = f"input_nodes_s{cur_simulation['scenario']}_{'_v'+cur_simulation['vidx']+'_' if self.scenario == 3 else ''}c{cur_simulation['threshold']}.csv"
+                #cur_simulation["input_nodes"] = inputs[csv_name] # TODO: include
 
                 nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
 

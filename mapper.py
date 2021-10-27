@@ -71,11 +71,11 @@ class Mapper:
         return train_loader, val_loader, test_loader
 
     @staticmethod
-    def get_scaler(input_normalizer):
-        from preprocessors.scalers.standard_scaler import StandardScaler
-        from preprocessors.scalers.dummy_scaler import DummyScaler
-        from preprocessors.scalers.minmax_scaler import MinMaxScaler
-        from preprocessors.scalers.knownmax_scaler import KnownMaxScaler
+    def get_output_scaler(input_normalizer):
+        from preprocessors.output_scalers.standard_scaler import StandardScaler
+        from preprocessors.output_scalers.dummy_scaler import DummyScaler
+        from preprocessors.output_scalers.minmax_scaler import MinMaxScaler
+        from preprocessors.output_scalers.knownmax_scaler import KnownMaxScaler
 
         return {
             "none": DummyScaler,

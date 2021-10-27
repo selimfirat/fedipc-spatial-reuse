@@ -22,10 +22,9 @@ def main(override_cfg = None):
 
     # Preprocess data
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
-    input_scaler = Mapper.get_scaler(cfg["input_scaler"])(**cfg)
-    output_scaler = Mapper.get_scaler(cfg["output_scaler"])(**cfg)
-    preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(input_scaler_ins=input_scaler, output_scaler_ins=output_scaler, **cfg)
-    train_loader, val_loader, test_loader, cfg["input_size"], input_scaler, output_scaler = preprocessor.fit_transform(train_loader, val_loader, test_loader)
+    output_scaler = Mapper.get_output_scaler(cfg["output_scaler"])(**cfg)
+    preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(output_scaler_ins=output_scaler, **cfg)
+    train_loader, val_loader, test_loader, cfg["input_size"], output_scaler = preprocessor.fit_transform(train_loader, val_loader, test_loader)
 
     # Train models
     evaluator = Evaluator(output_scaler, cfg["metrics"])

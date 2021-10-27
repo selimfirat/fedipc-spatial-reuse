@@ -9,8 +9,8 @@ class MinMaxScaler:
     def fit(self, X):
 
         rt = torch.stack(X, dim=0)
-        self.min = rt.amin(dim=[0, 1])
-        self.max = rt.amax(dim=[0, 1])
+        self.min = rt.min()
+        self.max = rt.max()
 
         self.diff = self.max - self.min
 

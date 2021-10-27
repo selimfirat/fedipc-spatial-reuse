@@ -1,4 +1,4 @@
-from preprocessors.scalers.minmax_scaler import MinMaxScaler
+from preprocessors.output_scalers.minmax_scaler import MinMaxScaler
 
 
 class KnownMaxScaler(MinMaxScaler):
