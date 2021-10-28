@@ -16,6 +16,7 @@ class Logger:
                 self.log_param(param, val)
 
     def log_metric(self, name, val, step=0):
+        print(step, name, val)
         if self.log:
             mlflow.log_metric(name, val, step)
 

@@ -61,7 +61,7 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                     self.best_mae = cur_mae
                     self.best_model = deepcopy(self.model)
                 else:
-                    self.patience_left -= - 1
+                    self.patience_left -= 1
 
                 if self.patience_left <= 0:
                     self.logger.log_metric("stopped_at_round", round_idx)
