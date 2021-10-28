@@ -41,6 +41,7 @@ class Mapper:
         from preprocessors.mean_features_preprocessor import MeanFeaturesPreprocessor
         from preprocessors.input_features_preprocessor import InputFeaturesPreprocessor
         from preprocessors.statistical_features_preprocessor import StatisticalFeaturesPreprocessor
+        from preprocessors.sequential_features_preprocessor import SequentialFeaturesPreprocessor
 
         return {
             "mean_features": MeanFeaturesPreprocessor,
@@ -48,6 +49,7 @@ class Mapper:
             "input_features": InputFeaturesPreprocessor,
             "all_features": AllFeaturesPreprocessor,
             "statistical_features": StatisticalFeaturesPreprocessor,
+            "sequential_features": SequentialFeaturesPreprocessor
         }[preprocessor]
 
     @staticmethod
