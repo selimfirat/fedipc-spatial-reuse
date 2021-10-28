@@ -38,6 +38,8 @@ class AbstractBasePreprocessor(ABC):
 
             return (val - mean) / std
 
+        return val
+
     @abstractmethod
     def fit(self, train_loader):
         pass
