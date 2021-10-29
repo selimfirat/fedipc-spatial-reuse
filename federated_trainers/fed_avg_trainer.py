@@ -13,9 +13,6 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
     def __init__(self, evaluator, logger, **cfg):
         super(FedAvgTrainer, self).__init__(evaluator, logger, **cfg)
-
-        self.cfg = cfg
-
         self.patience_left = self.cfg["early_stopping_patience"]
 
         self.best_mae = float("inf")
@@ -24,13 +21,17 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
     def train(self, train_loader, val_loader):
 
+        optimizer_state_dicts = {
+            context_key: deepcopy(self.optimizer.state_dict()) for context_key, _ in train_loader
+        }
+
         for round_idx in tqdm(range(1, self.cfg["max_num_rounds"] + 1)):
 
             m = max(int(np.round(self.cfg["participation"]*len(train_loader))), 1)
             chosen_contexts = np.random.choice(list(range(len(train_loader))), m, replace=False)
 
             original_state_dict = deepcopy(self.model.state_dict())
-            state_dicts = {}
+            model_state_dicts = {}
 
             total_loss = .0
 
@@ -39,17 +40,19 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                     continue
 
                 self.model.load_state_dict(original_state_dict)
-                self.model = to_device(self.model, self.cfg["device"])
-                optimizer = SGD(self.model.parameters(), lr=self.cfg["lr"], momentum=self.cfg["momentum"], nesterov=self.cfg["nesterov"], dampening=self.cfg["dampening"], weight_decay=self.cfg["weight_decay"])
+                self.optimizer.load_state_dict(optimizer_state_dicts[context_key])
 
-                total_loss += self.train_node(self.model, optimizer, context_data_loader, original_state_dict)
+                self.model = to_device(self.model, self.cfg["device"])
+
+                total_loss += self.train_node(self.model, self.optimizer, context_data_loader, original_state_dict)
                 self.model = to_device(self.model, "cpu")
 
-                state_dicts[context_key] = deepcopy(self.model.state_dict())
+                model_state_dicts[context_key] = deepcopy(self.model.state_dict())
+                optimizer_state_dicts[context_key] = deepcopy(self.optimizer.state_dict())
 
             self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts), round_idx)
 
-            self.aggregate(state_dicts)
+            self.aggregate(model_state_dicts)
 
             if (round_idx % self.cfg["early_stopping_check_rounds"]) == 0:
                 eval_val = self.evaluator.calculate(self, val_loader)
@@ -107,13 +110,13 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
         return total_loss / self.cfg["num_epochs"]
 
-    def aggregate(self, state_dicts):
+    def aggregate(self, model_state_dicts):
 
         new_state_dict = {}
 
         for key in self.model.state_dict().keys():
             # TODO: implement n_k / n part (not required for now since all n_k / n values are equal)
-            new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in state_dicts.values()], dim=0), dim=0)
+            new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in model_state_dicts.values()], dim=0), dim=0)
 
         self.model.load_state_dict(new_state_dict)
 

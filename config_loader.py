@@ -11,7 +11,7 @@ class ConfigLoader:
 
         parser.add_argument("--scenario", default=3, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
         parser.add_argument("--federated_trainer", default="fedavg", type=str, help="Federated Architecture")
-        parser.add_argument("--nn_model", default="transformer", type=str, help="NN Model")
+        parser.add_argument("--nn_model", default="mlp", type=str, help="NN Model")
         parser.add_argument("--preprocessor", default="padded_features", type=str, help="Preprocessor applied to the raw data")
         parser.add_argument("--input_scaler", default="minmax", type=str, help="Normalizer applied to the preprocessed data")
         parser.add_argument("--output_scaler", default="minmax", type=str, help="Normalizer applied to the labels")
@@ -27,6 +27,7 @@ class ConfigLoader:
         parser.add_argument("--early_stopping_patience", type=int, default=5)
         parser.add_argument("--early_stopping_check_rounds", type=int, default=20)
         parser.add_argument("--loss", type=str, default="mse",  help="mse, l1, smooth_l1")
+        parser.add_argument("--optimizer", type=str, default="sgd",  help="sgd, adam, adamw")
 
         # Local SGD Parameters
         parser.add_argument("--lr", type=float, default=1e-1)
@@ -46,7 +47,7 @@ class ConfigLoader:
         parser.add_argument("--nhead", type=int, default=2)
         parser.add_argument("--num_layers", type=int, default=2)
         parser.add_argument("--dropout",type=float,default=0.4)
-        # Dummy optuna params
+
         parser.add_argument("--parallel", type=int, default=1)
 
         self.cfg = vars(parser.parse_args())
