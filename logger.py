@@ -1,5 +1,6 @@
 import mlflow
-
+import os
+import dill as pickle
 
 class Logger:
 
@@ -10,7 +11,8 @@ class Logger:
         if self.log:
             mlflow.set_tracking_uri(mlflow_server)
             mlflow.set_experiment(mlflow_experiment)
-            mlflow.start_run()
+            cur_run = mlflow.start_run()
+            self.run_id = cur_run.info.run_id
 
             for param, val in params.items():
                 self.log_param(param, val)
@@ -31,3 +33,15 @@ class Logger:
     def close(self):
         if self.log:
             mlflow.end_run()
+
+    def log_artifacts(self, artifacts):
+        if self.log:
+            path = f"tmp/results/{self.run_id}"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            
+            for name, item in artifacts.items():
+                rpath = os.path.join(path, f"{name}.pkl")
+                with open(rpath, "wb+") as f:
+                    pickle.dump(item, f)
+            

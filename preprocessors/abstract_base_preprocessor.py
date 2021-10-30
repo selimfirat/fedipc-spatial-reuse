@@ -52,12 +52,12 @@ class AbstractBasePreprocessor(ABC):
         res = []
 
         for context_idx, features, labels in loader:
-            r = [len(lbl) for lbl in labels.values()]
+            r = [len(feats["rssi"]) for feats in features.values()]
             res.append(r)
 
         return res
 
-    def fit_transform(self, train_data, val_data, test_data):
+    def fit_transform(self, train_data, val_data, test_data, test_scenario_data):
         if self.use_cache and os.path.exists(self.cache_path):
             with open(self.cache_path, 'rb') as f:
                 return pickle.load(f)
@@ -83,18 +83,24 @@ class AbstractBasePreprocessor(ABC):
 
         new_test_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
 
+
+        label_lengths = self._calculate_label_lengths(test_scenario_data)
+        context_indices, features, labels = self.transform(test_scenario_data)
+        labels = self.output_scaler.transform(labels)
+
+        new_test_scenario_loader = DataLoader(SRProcessedDataset(context_indices, features, labels, label_lengths, self.batch_size, self.shuffle), collate_fn=lambda x: x[0] if isinstance(x, list) and len(x) == 1 else x)
+
         input_size = features[0].shape[1] if type(features[0]) is torch.Tensor and np.all(np.array([feat.shape[-1] for feat in features]) == features[0].shape[-1]) else "UNKNOWN"
         if input_size == "UNKNOWN" and type(features[0][0]) is dict:
             input_size = f"UNKNOWN_DICT_{len(features[0][0].keys())}"
 
-        res = new_train_loader, new_val_loader, new_test_loader, input_size, self.output_scaler
+        res = new_train_loader, new_val_loader, new_test_loader, new_test_scenario_loader, input_size, self.output_scaler
 
         if self.use_cache:
             with open(self.cache_path, 'wb') as f:
                 pickle.dump(res, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         return res
-
 
 """
 Scenario 1

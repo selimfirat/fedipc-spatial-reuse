@@ -16,7 +16,8 @@ class SRDataset(Dataset):
         self.contexts = {
             "train": train_contexts,
             "val": val_contexts,
-            "test": test_contexts
+            "test": test_contexts,
+            "testdata": train_contexts + val_contexts + test_contexts
         }[split]
 
     def __len__(self):
@@ -82,34 +83,41 @@ class DataDownloader:
         self.inputs_url = f"https://zenodo.org/record/5575120/files/simulator_input_files_sce{scenario}.zip?download=1"
         self.outputs_url = f"https://zenodo.org/record/5575120/files/output_11ax_sr_simulations_sce{scenario}.txt?download=1"
 
-        self.download_data_if_not_exist()
+        if scenario == "test":
+            self.outputs_path = self.outputs_path.replace(f"sce{scenario}", "test")
+            self.inputs_path = self.inputs_path.replace(f"sce{scenario}", "test")
+            self.inputs_url = self.inputs_url.replace(f"sce{scenario}", "test")
+            self.outputs_url = self.outputs_url.replace(f"sce{scenario}", "test")
+
+        self.download_data_if_not_exist(self.inputs_path, self.outputs_path, self.inputs_url, self.outputs_url)
 
         self.nodes, self.y_true_dict, self.train_contexts, self.val_contexts, self.test_contexts = self._load_nodes_cached() if self.use_cache else self._load_nodes()
 
-    def download_data_if_not_exist(self):
-        if not os.path.exists(self.outputs_path):
-            print(f"Now downloading {self.outputs_path}...")
-            r = requests.get(self.outputs_url, allow_redirects=True)
+    def download_data_if_not_exist(self, inputs_path, outputs_path, inputs_url, outputs_url):
+        if not os.path.exists(outputs_path):
+            print(f"Now downloading {outputs_path}...")
+            r = requests.get(outputs_url, allow_redirects=True)
 
-            open(self.outputs_path, 'wb').write(r.content)
-            print(f"Downloaded {self.outputs_path}!")
+            open(outputs_path, 'wb').write(r.content)
+            print(f"Downloaded {outputs_path}!")
 
-        if not os.path.exists(self.inputs_path):
-            print(f"Now downloading {self.inputs_path}...")
-            r = requests.get(self.inputs_url, allow_redirects=True)
+        if not os.path.exists(inputs_path):
+            print(f"Now downloading {inputs_path}...")
+            r = requests.get(inputs_url, allow_redirects=True)
 
-            zip_target = f"{self.inputs_path}.zip"
+            zip_target = f"{inputs_path}.zip"
 
             open(zip_target, 'wb').write(r.content)
 
             with zipfile.ZipFile(zip_target, "r") as zip_ref:
-                zip_ref.extractall(self.data_path)
+                zip_ref.extractall(self.inputs_path if self.scenario == "test" else self.data_path)
 
             if self.scenario == 3:
                 os.rename("data/input_files_3_light", "data/simulator_input_files_sce3")
 
             os.remove(zip_target)
             print(f"Downloaded {self.inputs_path}!")
+
 
     def get_data(self):
 

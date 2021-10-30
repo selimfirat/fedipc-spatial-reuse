@@ -19,12 +19,13 @@ def main(override_cfg = None):
 
     # Download/Load Data
     train_loader, val_loader, test_loader = Mapper.get_data_loaders(cfg["scenario"])
+    test_scenario_loader = Mapper.get_test_loader()
 
     # Preprocess data
     cfg["output_size"] = 1 if cfg["scenario"] == 1 else 4
     output_scaler = Mapper.get_output_scaler(cfg["output_scaler"])(**cfg)
     preprocessor = Mapper.get_preprocessor(cfg["preprocessor"])(output_scaler_ins=output_scaler, **cfg)
-    train_loader, val_loader, test_loader, cfg["input_size"], output_scaler = preprocessor.fit_transform(train_loader, val_loader, test_loader)
+    train_loader, val_loader, test_loader, test_scenario_loader, cfg["input_size"], output_scaler = preprocessor.fit_transform(train_loader, val_loader, test_loader, test_scenario_loader)
 
     # Train models
     evaluator = Evaluator(output_scaler, cfg["metrics"])
@@ -43,6 +44,14 @@ def main(override_cfg = None):
     logger.log_metrics({ f"train_{k}": v for k,v in eval_train.items() })
     logger.log_metrics({ f"val_{k}": v for k,v in eval_val.items() })
     logger.log_metrics({ f"test_{k}": v for k,v in eval_test.items() })
+
+    _, y_pred = trainer.predict(test_scenario_loader)
+    y_pred = output_scaler.revert(y_pred)
+    y_pred = {k[0]: v.numpy() for k, v in y_pred.items()}
+
+    logger.log_artifacts({
+
+    })
 
     logger.close()
 

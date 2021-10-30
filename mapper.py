@@ -70,6 +70,19 @@ class Mapper:
         return train_loader, val_loader, test_loader
 
     @staticmethod
+    def get_test_loader():
+        from dataset import SRDataset, DataDownloader
+        from torch.utils.data import DataLoader
+
+        data_downloader = DataDownloader("test")
+
+        data = SRDataset(data_downloader, split="testdata")
+
+        loader = DataLoader(data)
+
+        return loader
+
+    @staticmethod
     def get_output_scaler(input_normalizer):
         from preprocessors.output_scalers.standard_scaler import StandardScaler
         from preprocessors.output_scalers.dummy_scaler import DummyScaler
