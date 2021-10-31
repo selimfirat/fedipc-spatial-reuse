@@ -63,7 +63,7 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                 cur_mae = eval_val["mae"]
                 self.logger.log_metric("val_mae_es", cur_mae, round_idx)
 
-                if cur_mae < self.best_mae and eval_val["r2"] > 0:
+                if cur_mae < self.best_mae:
                     self.patience_left = self.cfg["early_stopping_patience"]
                     self.best_mae = cur_mae
                     self.best_model = deepcopy(self.model)

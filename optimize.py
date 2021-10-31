@@ -17,13 +17,13 @@ def objective(device, mlflow_experiment):
             "batch_size": trial.suggest_categorical("batch_size", [4, 8, 16, 32, 64, 128]),
             "num_epochs": 5,
             "max_num_rounds": 100,
-            "optimizer": trial.suggest_categorical("optimizer", ["sgd", "adam", "adamw"]),
+            "optimizer": "sgd", #trial.suggest_categorical("optimizer", ["sgd", "adam", "adamw"]),
             "device": device,
             "mlflow_server": "http://bubota.ee.ic.ac.uk:5000/",
             "mlflow_experiment": mlflow_experiment,
-            "input_scaler": trial.suggest_categorical("input_scaler", ["none", "minmax", "standard"]),
-            "output_scaler": trial.suggest_categorical("output_scaler", ["none", "minmax"]),
-            "federated_trainer": trial.suggest_categorical("federated_trainer", ["fedavg", "fedprox"]),
+            "input_scaler": "minmax", #trial.suggest_categorical("input_scaler", ["none", "minmax", "standard"]),
+            "output_scaler": "minmax", #trial.suggest_categorical("output_scaler", ["none", "minmax"]),
+            "federated_trainer": "fedavg", #trial.suggest_categorical("federated_trainer", ["fedavg", "fedprox"]),
             "nn_model": "mlp",
         }
         layers = []
@@ -67,8 +67,8 @@ if __name__ == '__main__':
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--scenario", type=int, default=3)
     parser.add_argument("--n_trials", type=int, default=100)
-    parser.add_argument("--parallel", type=int, default=2)
-    parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse-opt1")
+    parser.add_argument("--parallel", type=int, default=4)
+    parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse-fedavg-mlp")
 
     cfg = vars(parser.parse_args())
 
