@@ -15,7 +15,7 @@ def objective(device, mlflow_experiment):
             "lr": trial.suggest_float("lr", 1e-5, 1.0, log=True),
             "loss": trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse", "l1-mse"]),
             "batch_size": trial.suggest_categorical("batch_size", [4, 8, 16, 32, 64, 128]),
-            "num_epochs": trial.suggest_int("num_epochs", 1, 50),
+            "num_epochs": 5,
             "max_num_rounds": 100,
             "optimizer": trial.suggest_categorical("optimizer", ["sgd", "adam", "adamw"]),
             "device": device,
