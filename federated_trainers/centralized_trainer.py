@@ -38,7 +38,7 @@ class CentralizedTrainer(AbstractBaseFederatedTrainer):
 
             for epoch_idx in range(self.cfg["num_epochs"]):
 
-                for i, (context_key, context_data_loader) in enumerate(train_loader):
+                for i, (context_key, context_data_loader, num_data) in enumerate(train_loader):
 
                     for X, y in context_data_loader:
                         self.model.zero_grad()
@@ -95,7 +95,7 @@ class CentralizedTrainer(AbstractBaseFederatedTrainer):
 
         y_pred = {}
         y_true = {}
-        for context_idx, context_loader in data_loader:
+        for context_idx, context_loader, num_data in data_loader:
 
             for X, y in context_loader:
 

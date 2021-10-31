@@ -18,41 +18,45 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
         self.best_mae = float("inf")
 
         self.best_model = None
+        
+        self.model = to_device(self.model, self.cfg["device"])
 
     def train(self, train_loader, val_loader):
 
         optimizer_state_dicts = {
-            context_key: deepcopy(self.optimizer.state_dict()) for context_key, _ in train_loader
+            context_key: deepcopy(self.optimizer.state_dict()) for context_key, _, _ in train_loader
         }
 
         for round_idx in tqdm(range(1, self.cfg["max_num_rounds"] + 1)):
 
             m = max(int(np.round(self.cfg["participation"]*len(train_loader))), 1)
-            chosen_contexts = np.random.choice(list(range(len(train_loader))), m, replace=False)
+            context_keys = [context_key for context_key, _, _ in train_loader]
+            chosen_contexts = [context_keys[i] for i in np.random.choice(list(range(len(train_loader))), m, replace=False)]
 
             original_state_dict = deepcopy(self.model.state_dict())
             model_state_dicts = {}
 
             total_loss = .0
 
-            for i, (context_key, context_data_loader) in enumerate(train_loader):
-                if i not in chosen_contexts:
+            nums_data = {}
+
+            for context_key, context_data_loader, num_data in train_loader:
+                if context_key not in chosen_contexts:
                     continue
 
                 self.model.load_state_dict(original_state_dict)
                 self.optimizer.load_state_dict(optimizer_state_dicts[context_key])
 
-                self.model = to_device(self.model, self.cfg["device"])
-
                 total_loss += self.train_node(self.model, self.optimizer, context_data_loader, original_state_dict)
-                self.model = to_device(self.model, "cpu")
 
                 model_state_dicts[context_key] = deepcopy(self.model.state_dict())
                 optimizer_state_dicts[context_key] = deepcopy(self.optimizer.state_dict())
 
+                nums_data[context_key] = num_data
+
             self.logger.log_metric("train_avg_loss", total_loss / len(chosen_contexts), round_idx)
 
-            self.aggregate(model_state_dicts)
+            self.aggregate(model_state_dicts, chosen_contexts, nums_data)
 
             if (round_idx % self.cfg["early_stopping_check_rounds"]) == 0:
                 eval_val = self.evaluator.calculate(self, val_loader)
@@ -70,7 +74,12 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
                     self.logger.log_metric("stopped_at_round", round_idx)
                     break
         else:
-            self.best_model = self.model
+            eval_val = self.evaluator.calculate(self, val_loader)
+            cur_mae = eval_val["mae"]
+
+            if cur_mae < self.best_mae:
+                self.best_model = self.model
+    
             self.logger.log_metric("stopped_at_round", self.cfg["max_num_rounds"])
 
         self.model = self.best_model
@@ -110,14 +119,16 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
         return total_loss / self.cfg["num_epochs"]
 
-    def aggregate(self, model_state_dicts):
+    def aggregate(self, model_state_dicts, chosen_contexts, nums_data):
 
+        total_data = sum(nums_data.values())
         new_state_dict = {}
 
         for key in self.model.state_dict().keys():
-            # TODO: implement n_k / n part (not required for now since all n_k / n values are equal)
-            new_state_dict[key] = torch.mean(torch.stack([sd[key] for sd in model_state_dicts.values()], dim=0), dim=0)
-
+            new_state_dict[key] = 0.0
+            for context_idx in chosen_contexts:
+                new_state_dict[key] += model_state_dicts[context_idx][key] * (nums_data[context_idx] / total_data)
+                
         self.model.load_state_dict(new_state_dict)
 
     def predict(self, data_loader):
@@ -125,17 +136,16 @@ class FedAvgTrainer(AbstractBaseFederatedTrainer):
 
         y_pred = {}
         y_true = {}
-        for context_idx, context_loader in data_loader:
+        for context_idx, context_loader, num_data in data_loader:
 
             for X, y, y_len in context_loader:
                 y_len = y_len[0]
+                X = to_device(X, self.cfg["device"])
 
-                preds = self.model.forward(X).detach()[:, :y_len].flatten()
+                preds = self.model.forward(X).detach()[:, :y_len].flatten().cpu()
                 y = y[:, :y_len].flatten()
 
-
-                y_pred[context_idx] = torch.cat([y_pred[context_idx][:, :y_len], preds], dim=0) if context_idx in y_pred else preds
-
-                y_true[context_idx] = torch.cat([y_true[context_idx][:, :y_len], y], dim=0) if context_idx in y_true else y
+                y_pred[context_idx] = torch.cat([y_pred[context_idx], preds], dim=0) if context_idx in y_pred else preds
+                y_true[context_idx] = torch.cat([y_true[context_idx], y], dim=0) if context_idx in y_true else y
 
         return y_true, y_pred

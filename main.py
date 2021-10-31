@@ -50,7 +50,9 @@ def main(override_cfg = None):
     y_pred = {k[0]: v.numpy() for k, v in y_pred.items()}
 
     logger.log_artifacts({
-
+        "test_preds": y_pred,
+        "model": trainer.model,
+        "output_scaler": output_scaler
     })
 
     logger.close()

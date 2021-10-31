@@ -44,4 +44,5 @@ class Logger:
                 rpath = os.path.join(path, f"{name}.pkl")
                 with open(rpath, "wb+") as f:
                     pickle.dump(item, f)
-            
+
+            mlflow.log_artifacts(path)

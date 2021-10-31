@@ -3,7 +3,7 @@ data/simulator_input_files
 data/*.txt
 cache
 tmp/*.pkl
-
+.vscode
 # Node artifact files
 node_modules/
 dist/

@@ -37,9 +37,13 @@ class SRProcessedDataset(Dataset):
 
     def __init__(self, context_indices, features, labels, label_lengths, node_batch_size, node_shuffle):
         self.context_data_loaders = []
+        self.context_num_data = []
 
         for context_features, context_labels, context_label_lengths in zip(features, labels, label_lengths):
-            cds = DataLoader(ContextDataset(context_features, context_labels, context_label_lengths), shuffle=node_shuffle, batch_size=node_batch_size)
+            context_data = ContextDataset(context_features, context_labels, context_label_lengths)
+            self.context_num_data.append(len(context_data))
+
+            cds = DataLoader(context_data, shuffle=node_shuffle, batch_size=node_batch_size)
             self.context_data_loaders.append(cds)
 
         self.context_indices = context_indices
@@ -50,7 +54,7 @@ class SRProcessedDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        return self.context_indices[idx], self.context_data_loaders[idx]
+        return self.context_indices[idx], self.context_data_loaders[idx], self.context_num_data[idx]
 
 
 class ContextDataset(Dataset):
@@ -139,7 +143,7 @@ class DataDownloader:
         return res
 
     def _load_nodes(self):
-        inputs = self._load_inputs()
+        #inputs = self._load_inputs()
 
         f = open(self.outputs_path, "r", encoding="utf-8", errors="ignore")
 
@@ -173,7 +177,7 @@ class DataDownloader:
                 csv_name = f"input_nodes_s{cur_simulation['scenario']}_{'_v'+cur_simulation['vidx']+'_' if self.scenario == 3 else ''}c{cur_simulation['threshold']}.csv"
                 #cur_simulation["input_nodes"] = inputs[csv_name] # TODO: include
 
-                nodes[cur_simulation["scenario"]][cur_simulation["threshold"]] = cur_simulation
+                nodes[cur_simulation["scenario"]][cur_simulation["threshold"] + '_v'+cur_simulation['vidx'] if self.scenario == 3 else ''] = cur_simulation
 
         y_true_dict = self._calculate_y_true_dict(nodes)
 
