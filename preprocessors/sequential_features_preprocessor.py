@@ -35,7 +35,7 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
             threshold_data["threshold"] = [int(threshold_data["threshold"][0])]
 
             for fname in feature_names:
-                new_features = self.scale(fname, torch.FloatTensor(threshold_data[fname]).unsqueeze(-1))
+                new_features = self.scale(fname, torch.FloatTensor(threshold_data[fname]))
 
                 fname = "combined" if fname != "interference" else fname
 
