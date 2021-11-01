@@ -44,9 +44,10 @@ class ConfigLoader:
         parser.add_argument("--mlp_hidden_sizes", type=list, default=[64, 128, 64])
         parser.add_argument("--mlp_activation", type=str, default="relu")
         ## Transformer
+        parser.add_argument("--d_model", type=int, default=16)
         parser.add_argument("--nhead", type=int, default=2)
         parser.add_argument("--num_layers", type=int, default=2)
-        parser.add_argument("--dropout",type=float,default=0.4)
+        parser.add_argument("--dropout",type=float,default=0.1)
 
         parser.add_argument("--parallel", type=int, default=1)
 
