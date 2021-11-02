@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.nn import LayerNorm
-
+from time import time
 class Transformer(nn.Module):
 
     def __init__(self,d_model,nhead,num_layers,dropout,device, **params):
@@ -19,14 +19,17 @@ class Transformer(nn.Module):
         self.linear = nn.Linear(self.d_model, 1)
 
     def forward(self,x):
-        seq = self.get_sta_sequences(x)
+        try:
+            seq = x["input"]
+        except:
+            seq = self.get_sta_sequences(x)
         x = self.init_linear(seq)
         x = self.transfor_encode(x)
         x = self.linear(F.relu(x))
         x = x.squeeze(2)
         return x
 
-    def get_sta_sequences(self,x):
+    def get_sta_sequences(self,x): ## squential_features_preprocessor
         '''
         :param x: Dict
         :return: Tensor: [bs,sta,sequence]
