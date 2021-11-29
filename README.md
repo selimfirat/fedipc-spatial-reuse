@@ -1,12 +1,16 @@
 # fedipc-spatial-reuse
 FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 
+## Useful Links
+* (Report)[Report.pdf]
+* (Presentation)[Presentation.pdf]
+
 ## Team Members
-* Selim Firat Yilmaz
-* Ahmet Kerem Ozfatura
-* Mehmet Emre Ozfatura
-* Ozlem Yildiz
-* Mentor: Prof. Deniz Gunduz
+* Selim Firat Yilmaz, Imperial College London
+* Ahmet Kerem Ozfatura, Imperial College London
+* Mehmet Emre Ozfatura, Imperial College London
+* Ozlem Yildiz, New York University
+* Mentor: Prof. Deniz Gunduz, Imperial College London
 
 ## Setup
 * `pip install requirements.txt`
