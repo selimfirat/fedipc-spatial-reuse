@@ -42,14 +42,15 @@ class Mapper:
         from preprocessors.input_features_preprocessor import InputFeaturesPreprocessor
         from preprocessors.statistical_features_preprocessor import StatisticalFeaturesPreprocessor
         from preprocessors.sequential_features_preprocessor import SequentialFeaturesPreprocessor
-
+        from preprocessors.transformer_features_preprocessor import TransformerFeaturesPreprocessor
         return {
             "mean_features": MeanFeaturesPreprocessor,
             "padded_features": PaddedFeaturesPreprocessor,
             "input_features": InputFeaturesPreprocessor,
             "all_features": AllFeaturesPreprocessor,
             "statistical_features": StatisticalFeaturesPreprocessor,
-            "sequential_features": SequentialFeaturesPreprocessor
+            "sequential_features": SequentialFeaturesPreprocessor,
+            "transformer_features": TransformerFeaturesPreprocessor
         }[preprocessor]
 
     @staticmethod

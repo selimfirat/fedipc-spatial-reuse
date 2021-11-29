@@ -1,8 +1,8 @@
 import torch
 from preprocessors.abstract_base_preprocessor import AbstractBasePreprocessor
+import math
 
-
-class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
+class TransformerFeaturesPreprocessor(AbstractBasePreprocessor):
 
     def fit(self, train_loader):
 
@@ -43,7 +43,19 @@ class SequentialFeaturesPreprocessor(AbstractBasePreprocessor):
                     features[idx][fname] = new_features
                 else:
                     features[idx][fname] = torch.cat([features[idx][fname], new_features], -1)
-
+            num_sta = math.floor(len(features[idx]["combined"]) /2)
+            thr = features[idx]["combined"][0]
+            rssi = features[idx]["combined"][1:1+num_sta]
+            sinr = features[idx]["combined"][1+num_sta:]
+            intr = features[idx]["interference"]
+            intr_len = len(intr)
+            inp = torch.zeros((num_sta,9))
+            for i in range(num_sta):
+                inp[i][0] = rssi[i]
+                inp[i][1] = sinr[i]
+                inp[i][2] = thr
+                inp[i][3:3+intr_len] = intr
+            features[idx]["input"] = inp
             labels[idx, :len(node_labels[threshold])] = torch.FloatTensor(node_labels[threshold])
 
         return features, labels
