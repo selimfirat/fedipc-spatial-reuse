@@ -1,21 +1,18 @@
 import time
 from multiprocessing import Process
-
+import random
 
 def objective(device, mlflow_experiment):
 
     def _objective(trial):
-        from utils import seed_everything
-        seed_everything(1)
-
         from main import main
         import torch
 
         params = {
-            "lr": trial.suggest_float("lr", 1e-5, 1.0, log=True),
-            "loss": trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse", "l1-mse"]),
-            "batch_size": trial.suggest_categorical("batch_size", [4, 8, 16, 32, 64, 128]),
-            "num_epochs": 5,
+            "lr": 0.1, #trial.suggest_float("lr", 1e-1, 1.0, log=True),
+            "loss": "mse", #trial.suggest_categorical("loss", ["l1", "smooth_l1", "mse", "l1-mse"]),
+            "batch_size": 16, #trial.suggest_categorical("batch_size", [4, 8, 16, 32, 64, 128]),
+            "num_epochs": 1,
             "max_num_rounds": 100,
             "optimizer": "sgd", #trial.suggest_categorical("optimizer", ["sgd", "adam", "adamw"]),
             "device": device,
@@ -29,7 +26,7 @@ def objective(device, mlflow_experiment):
         layers = []
         num_layers = trial.suggest_int("num_layers", 1, 4)
         for i in range(num_layers):
-            num_hiddens = trial.suggest_categorical(f"num_hiddens_{str(i)}", [16, 32, 64, 128, 256])
+            num_hiddens = trial.suggest_categorical(f"num_hiddens_{str(i)}", [64, 128, 256])
             layers.append(num_hiddens)
 
         params["mlp_hidden_sizes"] = layers
@@ -51,8 +48,8 @@ def create_worker(cfg):
     import optuna
     from optuna.samplers import TPESampler
 
-    sampler = TPESampler(seed=1)
-    study = optuna.create_study(study_name="hyperparameter_study", sampler=sampler,
+    sampler = TPESampler(seed=random.randint(1,10000))
+    study = optuna.create_study(study_name="hyperparameter_study2", sampler=sampler,
                                 storage=f"sqlite:///tmp/optimize_{cfg['mlflow_experiment']}_{str(cfg['scenario'])}.db", load_if_exists=True,
                                 direction="minimize")
     study.optimize(objective(cfg["device"], cfg["mlflow_experiment"]), n_trials=cfg["n_trials"])
@@ -68,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument("--scenario", type=int, default=3)
     parser.add_argument("--n_trials", type=int, default=100)
     parser.add_argument("--parallel", type=int, default=4)
-    parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse-fedavg-mlp")
+    parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse-fedavg-mlp2")
 
     cfg = vars(parser.parse_args())
 

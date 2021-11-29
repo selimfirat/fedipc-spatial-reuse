@@ -6,7 +6,7 @@ class ConfigLoader:
     def load_by_cli(self):
         parser = ArgumentParser(description="FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.")
 
-        parser.add_argument("--mlflow_server", type=str, default=None)
+        parser.add_argument("--mlflow_server", type=str, default="http://bubota.ee.ic.ac.uk:5000/")
         parser.add_argument("--mlflow_experiment", type=str, default="spatial-reuse")
 
         parser.add_argument("--scenario", default=3, type=int, help="Scenario number (1 or 2 at https://zenodo.org/record/5506248#.YVMaMUZBxpR) ")
@@ -20,9 +20,9 @@ class ConfigLoader:
 
         # Federated Trainer Params
         parser.add_argument("--participation", type=float, default=1.0)
-        parser.add_argument("--batch_size", type=int, default=21)
+        parser.add_argument("--batch_size", type=int, default=32)
         parser.add_argument("--shuffle", type=bool, default=True)
-        parser.add_argument("--num_epochs", type=int, default=5)
+        parser.add_argument("--num_epochs", type=int, default=1)
         parser.add_argument("--max_num_rounds", type=int, default=1000)
         parser.add_argument("--early_stopping_patience", type=int, default=5)
         parser.add_argument("--early_stopping_check_rounds", type=int, default=20)
@@ -30,7 +30,7 @@ class ConfigLoader:
         parser.add_argument("--optimizer", type=str, default="sgd",  help="sgd, adam, adamw")
 
         # Local SGD Parameters
-        parser.add_argument("--lr", type=float, default=1e-1)
+        parser.add_argument("--lr", type=float, default=0.5)
         parser.add_argument("--momentum", type=float, default=0.0)
         parser.add_argument("--nesterov", type=float, default=False)
         parser.add_argument("--weight_decay", type=float, default=0.0)
@@ -41,7 +41,7 @@ class ConfigLoader:
 
         ## NN Model Parameters
         # MLP Parameters
-        parser.add_argument("--mlp_hidden_sizes", type=list, default=[64, 128, 64])
+        parser.add_argument("--mlp_hidden_sizes", type=list, default=[256])
         parser.add_argument("--mlp_activation", type=str, default="relu")
         ## Transformer
         parser.add_argument("--nhead", type=int, default=2)

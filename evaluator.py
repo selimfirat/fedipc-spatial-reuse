@@ -11,7 +11,7 @@ class Evaluator:
         self.metrics = metrics
         self.output_scaler = output_scaler
 
-    def calculate(self, trainer, data_loader):
+    def calculate(self, trainer, data_loader, fix_negatives=False):
         y_true, y_pred = trainer.predict(data_loader)
         y_pred = self.output_scaler.revert(y_pred)
         y_true = self.output_scaler.revert(y_true)
@@ -20,6 +20,9 @@ class Evaluator:
             y_true = torch.cat([y_true_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy().flatten()
             y_pred = torch.cat([y_pred_dict[context_idx] for context_idx in y_pred_dict.keys()], dim=0).numpy().flatten()
 
+            if fix_negatives:
+                y_pred[y_pred < 0.0] = 0.0
+            
             results = {}
 
             for metric_name in self.metrics:
