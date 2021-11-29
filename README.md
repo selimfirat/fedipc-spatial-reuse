@@ -2,8 +2,8 @@
 FedIPC Spatial Reuse Project for ITU AI/ML Challenge 2021.
 
 ## Useful Links
-* (Report)[Report.pdf]
-* (Presentation)[Presentation.pdf]
+* [Report](Report.pdf)
+* [Presentation](Presentation.pdf)
 
 ## Team Members
 * Selim Firat Yilmaz, Imperial College London
